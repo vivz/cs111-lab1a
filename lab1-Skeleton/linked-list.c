@@ -27,6 +27,23 @@ int is_empty(command_list list) {
 	return (list.head == NULL);
 }*/
 
+command_t remove_last_node(command_list* list){
+	command_t bye=list->tail;
+	if(list->head!=NULL)
+	{
+		command_node* curr = list->head;
+		while (curr->next!=list->tail) {
+			curr = curr->next;
+		}
+		curr->next=NULL;
+		list->tail=curr;
+	}//potential seg fault
+	return bye;
+}
+
+
+
+
 void print_list(command_list* list) {
 
 	command_node* curr = list->head;

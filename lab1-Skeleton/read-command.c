@@ -50,6 +50,9 @@ make_command_stream (int (*get_next_byte) (void *),
   append_to_list(new_command0, &command_list_test);
   append_to_list(new_command1, &command_list_test);
 
+  //pop
+  remove_last_node(&command_list_test);
+
   //print list
   printf("pre print list\n");
   print_list(&command_list_test);
