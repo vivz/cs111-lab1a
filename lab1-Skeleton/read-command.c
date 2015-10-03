@@ -41,16 +41,29 @@ make_command_stream (int (*get_next_byte) (void *),
   new_command1->u.word[1] = "b";
   new_command1->u.word[2] = NULL;
 
+  command_t new_command2 = malloc(sizeof(command_t));
+  new_command2->type = OR_COMMAND;
+  new_command2->status = -1;
+  new_command2->u.command[0] = new_command0;
+  new_command2->u.command[1] = new_command1;
+  printf("%d", new_command2->u.command[0]->type);
+  printf("%d", new_command2->u.command[1]->type);
   command_list command_list_test;
   command_list_test.head=NULL;
   command_list_test.tail=NULL;
+
+
 
   //populate list
   printf("pre append to list\n");
   append_to_list(new_command0, &command_list_test);
   append_to_list(new_command1, &command_list_test);
+  append_to_list(new_command2, &command_list_test);
+  printf("printing list after append\n");
+  print_list(&command_list_test);
 
   //pop
+  printf("removing last node\n");
   remove_last_node(&command_list_test);
 
   //print list
