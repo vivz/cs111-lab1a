@@ -14,6 +14,7 @@ typedef struct command_node {
 typedef struct command_list {
 	command_node* head;
 	command_node* tail;
+	command_node* current;
 } command_list;
 
 void append_to_list(command_t, command_list*);

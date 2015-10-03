@@ -25,15 +25,16 @@ make_command_stream (int (*get_next_byte) (void *),
   */
 
 	printf("make_command_stream\n");
-  command_t new_command0 = malloc(sizeof(command_t));
+  command_t new_command0 = malloc(sizeof(struct command));
   new_command0->type = SIMPLE_COMMAND;
   new_command0->status = -1;
   new_command0->u.word = malloc(3 * sizeof(char*));
   new_command0->u.word[0] = "echo";
   new_command0->u.word[1] = "a";
   new_command0->u.word[2] = NULL;
+  new_command0->output = "out";
 
-  command_t new_command1 = malloc(sizeof(command_t));
+  command_t new_command1 = malloc(sizeof(struct command));
   new_command1->type = SIMPLE_COMMAND;
   new_command1->status = -1;
   new_command1->u.word = malloc(3 * sizeof(char*));
@@ -41,13 +42,13 @@ make_command_stream (int (*get_next_byte) (void *),
   new_command1->u.word[1] = "b";
   new_command1->u.word[2] = NULL;
 
-  command_t new_command2 = malloc(sizeof(command_t));
+  command_t new_command2 = malloc(sizeof(struct command));
   new_command2->type = OR_COMMAND;
   new_command2->status = -1;
   new_command2->u.command[0] = new_command0;
   new_command2->u.command[1] = new_command1;
-  printf("%d", new_command2->u.command[0]->type);
-  printf("%d", new_command2->u.command[1]->type);
+
+
   command_list command_list_test;
   command_list_test.head=NULL;
   command_list_test.tail=NULL;
