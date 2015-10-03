@@ -9,6 +9,7 @@
    static function definitions, etc.  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 /* FIXME: Define the type 'struct command_stream' here.  This should
    complete the incomplete type declaration in command.h.  */
@@ -21,6 +22,22 @@ make_command_stream (int (*get_next_byte) (void *),
      add auxiliary functions and otherwise modify the source code.
      You can also use external functions defined in the GNU C Library.  */
 	printf("make_command_stream\n");
+
+  command_t new_command = malloc(sizeof(command_t));
+  new_command->type = SIMPLE_COMMAND;
+  new_command->status = -1;
+  new_command->u.word = malloc(3 * sizeof(char*));
+  new_command->u.word[0] = "echo";
+  new_command->u.word[1] = "a";
+  new_command->u.word[2] = NULL;
+
+
+  print_command(new_command);
+
+
+
+
+
 	char c = get_next_byte(get_next_byte_argument);
  	//printf("%c",c);	
 	while (c != EOF)
@@ -36,6 +53,7 @@ make_command_stream (int (*get_next_byte) (void *),
 command_t
 read_command_stream (command_stream_t s)
 {
+
   /* FIXME: Replace this with your implementation too.  */
   error (1, 0, "command reading not yet implemented");
   return 0;
