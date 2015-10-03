@@ -20,6 +20,6 @@ void append_to_list(command_t, command_list*);
 
 command_t remove_last_node(command_list);
 
-int is_empty(command_list);
+//int is_empty(command_list);
 
 void print_list(command_list*);
