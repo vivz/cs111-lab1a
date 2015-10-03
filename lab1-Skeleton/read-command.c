@@ -52,8 +52,6 @@ make_command_stream (int (*get_next_byte) (void *),
 
   //print list
   printf("pre print list\n");
-  printf("type outside is %i\n",command_list_test.head->command->status);
-
   print_list(&command_list_test);
 
   /*
