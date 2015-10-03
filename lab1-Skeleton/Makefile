@@ -31,6 +31,7 @@ alloc.o: alloc.h
 execute-command.o main.o print-command.o read-command.o: command.h
 execute-command.o print-command.o read-command.o: command-internals.h
 linked-list.c execute-command.o print-command.o read-command.o: linked-list.h
+stack.c execute-command.o print-command.o read-command.o: stack.h
 
 dist: $(DISTDIR).tar.gz
 
