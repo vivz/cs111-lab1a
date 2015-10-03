@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "linked-list.h"
 
 /* FIXME: Define the type 'struct command_stream' here.  This should
    complete the incomplete type declaration in command.h.  */
@@ -23,16 +24,40 @@ make_command_stream (int (*get_next_byte) (void *),
      You can also use external functions defined in the GNU C Library.  */
 	printf("make_command_stream\n");
 
-  command_t new_command = malloc(sizeof(command_t));
-  new_command->type = SIMPLE_COMMAND;
-  new_command->status = -1;
-  new_command->u.word = malloc(3 * sizeof(char*));
-  new_command->u.word[0] = "echo";
-  new_command->u.word[1] = "a";
-  new_command->u.word[2] = NULL;
+  command_t new_command0 = malloc(sizeof(command_t));
+  new_command0->type = SIMPLE_COMMAND;
+  new_command0->status = -1;
+  new_command0->u.word = malloc(3 * sizeof(char*));
+  new_command0->u.word[0] = "echo";
+  new_command0->u.word[1] = "a";
+  new_command0->u.word[2] = NULL;
+
+  command_t new_command1 = malloc(sizeof(command_t));
+  new_command1->type = SIMPLE_COMMAND;
+  new_command1->status = -1;
+  new_command1->u.word = malloc(3 * sizeof(char*));
+  new_command1->u.word[0] = "cat";
+  new_command1->u.word[1] = "b";
+  new_command1->u.word[2] = NULL;
+
+  command_list* command_list_test;
+  command_list_test->head = NULL;
+  command_list_test->tail = NULL;
 
 
-  print_command(new_command);
+  printf("pre append to list\n");
+
+
+  append_to_list(new_command0, command_list_test);
+  append_to_list(new_command1, command_list_test);
+
+  printf("pre print commands\n");
+  print_command(new_command0);
+  print_command(new_command1);
+
+
+  printf("pre print list\n");
+  print_list(command_list_test);
 
 
 
