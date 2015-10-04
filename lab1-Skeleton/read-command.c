@@ -33,25 +33,40 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
 
   simple_command->type = SIMPLE_COMMAND;
   simple_command->u.word = malloc(20*sizeof(char*));
+  simple_command->input = (char *) malloc(256);
+  simple_command->output = (char *) malloc(256);
   char word_to_store[256] = ""; 
   for (i = 0; i < chunk_len; i++) {
 
     switch(chunk[i]) {
       case '<':
-        if (status == NEXT_IS_OUTPUT) {
+        // signals end of word
+        if (word_to_store[0] == '\0') {
+          ;
+        }
+        else if (status == NEXT_IS_OUTPUT) {
+          simple_command->output = (char*) malloc(256);
           strcpy(simple_command->output, word_to_store);
         }
-        else 
+        else {
+          simple_command->u.word[num_words] = (char*) malloc(256);
           strcpy(simple_command->u.word[num_words++], word_to_store);
+        }
         word_to_store[0] = '\0';
         status = NEXT_IS_INPUT;
         break;
       case '>':
-        if (status == NEXT_IS_INPUT) {
+        if (word_to_store[0] == '\0') {
+          ;
+        }
+        else if (status == NEXT_IS_INPUT) {
+          simple_command->input = (char*) malloc(256);          
           strcpy(simple_command->input, word_to_store);
         }
-        else 
+        else {
+          simple_command->u.word[num_words] = (char*) malloc(256);
           strcpy(simple_command->u.word[num_words++], word_to_store);
+        }
         word_to_store[0] = '\0';
         status = NEXT_IS_OUTPUT;
         break;
@@ -60,22 +75,28 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
           ;
         }
         else if (status == NEXT_IS_OUTPUT) {
+          simple_command->output = (char*) malloc(256);
           strcpy(simple_command->output, word_to_store);
           word_to_store[0] = '\0';
           status = NEXT_IS_WORD;
         }
         else if (status == NEXT_IS_INPUT) {
+          simple_command->input = (char*) malloc(256);
           strcpy(simple_command->input, word_to_store);
           word_to_store[0] = '\0';
           status = NEXT_IS_WORD;
         }
         else {
           // we have a word
+          simple_command->u.word[num_words] = (char*) malloc(256);
           printf("space?\n");
           printf("word to store: %s\n",word_to_store );
+          printf("input size: %d\n", sizeof(simple_command->u.word[num_words]));
+          printf("word size: %d\n", sizeof(word_to_store));
           //printf("%s\n", );
           strcpy(simple_command->u.word[num_words],word_to_store);
           num_words++;
+          word_to_store[0] = '\0';
         }
         break;
       default:
@@ -84,6 +105,20 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
         word_to_store[++word_len] = '\0';
         printf("word to store: %s\n", word_to_store);
     }
+  }
+  switch(status) {
+    case NEXT_IS_WORD:
+      simple_command->u.word[num_words++] = (char*) malloc(256);
+      strcpy(simple_command->u.word[num_words],word_to_store);
+      break;
+    case NEXT_IS_INPUT:
+      simple_command->input = (char*) malloc(256);
+      strcpy(simple_command->input, word_to_store);
+      break;
+    case NEXT_IS_OUTPUT:
+      simple_command->output = (char*) malloc(256);
+      strcpy(simple_command->output, word_to_store);
+      break;
   }
   simple_command->u.word[num_words] = NULL;
 }
