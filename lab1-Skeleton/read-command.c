@@ -28,7 +28,7 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   int chunk_len = strlen(chunk);
   int i;
   int num_words = 0;
-  int status;
+  int status = NEXT_IS_WORD;
   int word_len;
 
   simple_command->type = SIMPLE_COMMAND;
@@ -39,19 +39,19 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
     switch(chunk[i]) {
       case '<':
         if (status == NEXT_IS_OUTPUT) {
-          simple_command->output = word_to_store;
+          strcpy(simple_command->output, word_to_store);
         }
         else 
-          simple_command->u.word[num_words++] = word_to_store;
+          strcpy(simple_command->u.word[num_words++], word_to_store);
         word_to_store[0] = '\0';
         status = NEXT_IS_INPUT;
         break;
       case '>':
         if (status == NEXT_IS_INPUT) {
-          simple_command->input = word_to_store;
+          strcpy(simple_command->input, word_to_store);
         }
         else 
-          simple_command->u.word[num_words++] = word_to_store;
+          strcpy(simple_command->u.word[num_words++], word_to_store);
         word_to_store[0] = '\0';
         status = NEXT_IS_OUTPUT;
         break;
@@ -60,22 +60,29 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
           ;
         }
         else if (status == NEXT_IS_OUTPUT) {
-          simple_command->output = word_to_store;
+          strcpy(simple_command->output, word_to_store);
+          word_to_store[0] = '\0';
           status = NEXT_IS_WORD;
         }
         else if (status == NEXT_IS_INPUT) {
-          simple_command->input = word_to_store;
+          strcpy(simple_command->input, word_to_store);
+          word_to_store[0] = '\0';
           status = NEXT_IS_WORD;
         }
         else {
           // we have a word
-          simple_command->u.word[num_words++] = word_to_store;
+          printf("space?\n");
+          printf("word to store: %s\n",word_to_store );
+          //printf("%s\n", );
+          strcpy(simple_command->u.word[num_words],word_to_store);
+          num_words++;
         }
         break;
       default:
         word_len = strlen(word_to_store);
         word_to_store[word_len] = chunk[i];
         word_to_store[++word_len] = '\0';
+        printf("word to store: %s\n", word_to_store);
     }
   }
   simple_command->u.word[num_words] = NULL;
