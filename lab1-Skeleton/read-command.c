@@ -89,11 +89,6 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
         else {
           // we have a word
           simple_command->u.word[num_words] = (char*) malloc(256);
-          printf("space?\n");
-          printf("word to store: %s\n",word_to_store );
-          printf("input size: %d\n", sizeof(simple_command->u.word[num_words]));
-          printf("word size: %d\n", sizeof(word_to_store));
-          //printf("%s\n", );
           strcpy(simple_command->u.word[num_words],word_to_store);
           num_words++;
           word_to_store[0] = '\0';
@@ -103,7 +98,6 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
         word_len = strlen(word_to_store);
         word_to_store[word_len] = chunk[i];
         word_to_store[++word_len] = '\0';
-        printf("word to store: %s\n", word_to_store);
     }
   }
   switch(status) {
@@ -211,7 +205,7 @@ make_command_stream (int (*get_next_byte) (void *),
 	}
   printf("buffer: %s\n", buffer);
 
-  char pair[2]; 
+  char pair[3]; 
   char chunk[256] = "";
   int chunk_len;
   int i = 0;
@@ -223,16 +217,18 @@ make_command_stream (int (*get_next_byte) (void *),
   for (i = 0; i < len; i++) {
     pair[0] = buffer[i];
     pair[1] = buffer[i+1];
-
+    pair[2] = '\0';
 
     if (strcmp(pair, "&&") == 0 || strcmp(pair, "||") == 0)  {
       //push to the stack 
+      printf("and/or found\n");
       printf("chunk: %s\n", chunk);
       chunk[0] = '\0';
       printf("token pair: %s\n", pair);
       i++;
     } 
     else if (pair[0] == '|') {
+      printf("pipe found\n");
       //push to t
       printf("chunk: %s\n", chunk);
       chunk[0] = '\0';
@@ -249,7 +245,6 @@ make_command_stream (int (*get_next_byte) (void *),
       chunk[chunk_len] = pair[0];
       chunk[++chunk_len] = '\0';
     }
-
   }
 
   printf("last chunk: %s ", chunk);
