@@ -16,11 +16,70 @@
 /* FIXME: Define the type 'struct command_stream' here.  This should
    complete the incomplete type declaration in command.h.  */
 
+enum chunk_status {
+  NEXT_IS_INPUT,
+  NEXT_IS_OUTPUT,
+  NEXT_IS_WORD
+};
 
 
+void
+parse_chunk_to_command(char* chunk, command_t simple_command) {
+  int chunk_len = strlen(chunk);
+  int i;
+  int num_words = 0;
+  int status;
+  int word_len;
 
+  simple_command->type = SIMPLE_COMMAND;
+  simple_command->u.word = malloc(20*sizeof(char*));
+  char word_to_store[256] = ""; 
+  for (i = 0; i < chunk_len; i++) {
 
-
+    switch(chunk[i]) {
+      case '<':
+        if (status == NEXT_IS_OUTPUT) {
+          simple_command->output = word_to_store;
+        }
+        else 
+          simple_command->u.word[num_words++] = word_to_store;
+        word_to_store[0] = '\0';
+        status = NEXT_IS_INPUT;
+        break;
+      case '>':
+        if (status == NEXT_IS_INPUT) {
+          simple_command->input = word_to_store;
+        }
+        else 
+          simple_command->u.word[num_words++] = word_to_store;
+        word_to_store[0] = '\0';
+        status = NEXT_IS_OUTPUT;
+        break;
+      case ' ':
+        if (word_to_store[0] == '\0') {
+          ;
+        }
+        else if (status == NEXT_IS_OUTPUT) {
+          simple_command->output = word_to_store;
+          status = NEXT_IS_WORD;
+        }
+        else if (status == NEXT_IS_INPUT) {
+          simple_command->input = word_to_store;
+          status = NEXT_IS_WORD;
+        }
+        else {
+          // we have a word
+          simple_command->u.word[num_words++] = word_to_store;
+        }
+        break;
+      default:
+        word_len = strlen(word_to_store);
+        word_to_store[word_len] = chunk[i];
+        word_to_store[++word_len] = '\0';
+    }
+  }
+  simple_command->u.word[num_words] = NULL;
+}
 
 command_stream_t
 make_command_stream (int (*get_next_byte) (void *),
@@ -82,6 +141,14 @@ make_command_stream (int (*get_next_byte) (void *),
   
   */
 
+  char* test_string = "sort   a < b  > c";
+  // should output "sort a<b>c"
+  command_t test_command = malloc(sizeof(struct command));
+  printf("pre parse\n");
+  parse_chunk_to_command(test_string, test_command);
+  printf("pre print\n");
+  print_command(test_command);
+  printf("post print command\n");
 
 
   char c = get_next_byte(get_next_byte_argument);
@@ -106,6 +173,10 @@ make_command_stream (int (*get_next_byte) (void *),
   char chunk[256] = "";
   int chunk_len;
   int i = 0;
+
+  // is command complete
+  // i.e. did we just see an AND, OR, or PIPE operator
+  int state;
 
   for (i = 0; i < len; i++) {
     pair[0] = buffer[i];
