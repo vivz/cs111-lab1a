@@ -31,6 +31,8 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   int status = NEXT_IS_WORD;
   int word_len;
 
+  // TODO: check for parenthesis maybe
+
   simple_command->type = SIMPLE_COMMAND;
   simple_command->u.word = malloc(20*sizeof(char*));
   simple_command->input = (char *) malloc(256);
@@ -134,6 +136,9 @@ parse_pair_to_operator_command(char* pair, command_t operator_command) {
   else if (pair[0] == '|') {
     operator_command->type = PIPE_COMMAND;
   }
+  else if (pair[0] == ';') {
+    operator_command->type = SEQUENCE_COMMAND;
+  }
   else {
     printf("You shouldn't be here, something went wrong\n");
   }
@@ -173,11 +178,19 @@ void print_tree_list(command_list* printme) {
       case PIPE_COMMAND:
         string = "|";
         break;
+      case SEQUENCE_COMMAND:
+        string = ";";
+        break;
+
     }
     printf("node %d: type: %s\n", count++, string);
     curr = curr->next;
   }
 }
+
+
+
+
 
 
 command_stream_t
@@ -201,6 +214,8 @@ make_command_stream (int (*get_next_byte) (void *),
   print_command(test_command);
   printf("post print command\n");
   */
+
+
 
   char c = get_next_byte(get_next_byte_argument);
   //printf("%c",c); 
@@ -245,7 +260,7 @@ make_command_stream (int (*get_next_byte) (void *),
       command_to_append = malloc(sizeof(struct command));
       parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
-      printf("and or or found\n");
+      printf("and or or found after\n");
       print_command(command_to_append);
       chunk[0] = '\0';
       operator_to_append = malloc(sizeof(struct command));
@@ -257,9 +272,19 @@ make_command_stream (int (*get_next_byte) (void *),
       command_to_append = malloc(sizeof(struct command));
       parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
-      printf("pipe found\n");
+      printf("pipe found after\n");
       print_command(command_to_append);
-
+      chunk[0] = '\0';
+      operator_to_append = malloc(sizeof(struct command));
+      parse_pair_to_operator_command(pair, operator_to_append);
+      append_to_list(operator_to_append, iterate_me);
+    }
+    else if (pair[0] == ';') {
+      command_to_append = malloc(sizeof(struct command));
+      parse_chunk_to_command(chunk, command_to_append);
+      append_to_list(command_to_append, iterate_me);
+      printf("semicolon found after\n");
+      print_command(command_to_append);
       chunk[0] = '\0';
       operator_to_append = malloc(sizeof(struct command));
       parse_pair_to_operator_command(pair, operator_to_append);
@@ -277,7 +302,6 @@ make_command_stream (int (*get_next_byte) (void *),
       iterate_me->tail = NULL;
       chunk[0] = '\0';
       i++;
-
       //pop things off and implement the algorithm
     }
     // else if (pair[0] == '\n') {
