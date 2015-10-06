@@ -28,6 +28,12 @@ command_t remove_last_node(command_list* list){
 	if(list->head!=NULL)
 	{
 		command_node* curr = list->head;
+		if(curr==list->tail)
+		{
+			list->head=NULL;
+			list->tail=NULL;
+			return curr;
+		}
 		while (curr->next!=list->tail) {
 			curr = curr->next;
 		}

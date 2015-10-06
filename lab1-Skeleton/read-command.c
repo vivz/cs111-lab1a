@@ -261,6 +261,67 @@ make_command_stream (int (*get_next_byte) (void *),
   printf("post print command\n");
   */
 
+  command_list test_list;
+  command_t popped_command;
+  test_list.head = NULL;
+  test_list.tail = NULL;
+
+  command_t new_command0 = malloc(sizeof(struct command));
+  new_command0->type = SIMPLE_COMMAND;
+  new_command0->status = -1;
+  new_command0->u.word = malloc(3 * sizeof(char*));
+  new_command0->u.word[0] = "echo";
+  new_command0->u.word[1] = "a";
+  new_command0->u.word[2] = NULL;
+  new_command0->output = "out";
+  printf("append 0\n");
+  append_to_list(new_command0, &test_list);
+
+  command_t new_command1 = malloc(sizeof(struct command));
+  new_command1->type = SIMPLE_COMMAND;
+  new_command1->status = -1;
+  new_command1->u.word = malloc(3 * sizeof(char*));
+  new_command1->u.word[0] = "cat";
+  new_command1->u.word[1] = "b";
+  new_command1->u.word[2] = NULL;
+  printf("append 1\n");
+  append_to_list(new_command1, &test_list);
+
+  command_t new_command2 = malloc(sizeof(struct command));
+  new_command2->type = OR_COMMAND;
+  new_command2->status = -1;
+  new_command2->u.command[0] = new_command0;
+  new_command2->u.command[1] = new_command1;
+  printf("append 2\n");
+  append_to_list(new_command2, &test_list);
+
+  printf("testing list after appends\n");
+  print_tree_list(&test_list);
+
+  printf("removing node 1...\n");
+  popped_command = remove_last_node(&test_list);
+  printf("removing node 2...\n");
+  popped_command = remove_last_node(&test_list);
+  printf("testing list after 2 removes\n");
+  print_tree_list(&test_list);
+  printf("removing node 3...\n");
+  popped_command = remove_last_node(&test_list);
+  
+  if(test_list.head==NULL)
+  printf("yayy\n");  
+  else
+  printf("nooo\n");
+
+
+  command_list command_list_test;
+  command_list_test.head = NULL;
+  command_list_test.tail = NULL;
+
+  command_t new_command3 = malloc(sizeof(struct command));
+  new_command3->type = SUBSHELL_COMMAND;
+  new_command3->status = -1;
+  new_command3->u.subshell_command = new_command0;
+
 
 
   char c = get_next_byte(get_next_byte_argument);
