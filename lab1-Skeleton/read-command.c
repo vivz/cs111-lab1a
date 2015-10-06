@@ -218,6 +218,7 @@ command_t build_command_tree(command_list* iterate_me) {
       case AND_COMMAND:
       case OR_COMMAND:
       case PIPE_COMMAND:
+      case SEQUENCE_COMMAND:
         //if the operator stack is empty
         if (operator_stack.head == NULL) {
           append_to_list(curr->command, &operator_stack);
@@ -426,8 +427,16 @@ make_command_stream (int (*get_next_byte) (void *),
       print_command(command_to_append);
       printf("print our linked list of nodes\n");
       print_tree_list(iterate_me);
-      // command_t insert_me = build_command_tree(iterate_me);
-      // append_to_list(insert_me, command_stream);
+
+
+
+      printf("trying to build tree\n");
+
+      command_t insert_me = build_command_tree(iterate_me);
+      printf("built tree\n");
+      print_command(insert_me);
+
+      append_to_list(insert_me, command_stream);
       iterate_me->head = NULL;
       iterate_me->tail = NULL;
       chunk[0] = '\0';
