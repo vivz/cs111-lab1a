@@ -188,7 +188,53 @@ void print_tree_list(command_list* printme) {
   }
 }
 
+command_t build_command_tree(command_list* iterate_me) {
+  command_list operator_stack;
+  command_list command_stack;
+  /*
+  1) If it's a simple command, push it onto the command stack
+  2) If '(' push on to operator stack
+  3) If operator and operator stack is empty, push operator on operator stack
+  4) if operator and operator stack not empty, pop all operators with greater or equal precedence
+    a) for each popped operator, pop two commands off the command stack
+    b) combine them into a new command
+    c) push it on the command stack
+  5) If encounter ')', pop operators off the stack for each operator, pop 2 commands, do the thing
+  6) Advance to next word (simple and or operator and go to #2)
+  7) When all words are gone, pop each operator and combine with 2 commands, similar to 4a
+  */
 
+  int top_command_type, current_type;
+  int operator_precedence[] = {1, 0, 1, 2};
+
+
+  command_node* curr = iterate_me->head;
+  while (curr != NULL) {
+    current_type = curr->command->type;
+    switch(current_type) {
+      case SIMPLE_COMMAND:
+        append_to_list(curr->command, &command_stack);
+        break;
+      case AND_COMMAND:
+      case OR_COMMAND:
+      case PIPE_COMMAND:
+        if (operator_stack.head == NULL) {
+          append_to_list(curr->command, &operator_stack);
+        }
+        // not empty
+        else {
+          top_command_type = operator_stack.tail->command->type;
+          while (operator_precedence[current_type] <= operator_precedence[top_command_type] && operator_stack.head != NULL) {
+
+          }
+        }
+        break;
+    }
+
+
+    curr = curr->next;
+  }
+}
 
 
 
@@ -244,7 +290,7 @@ make_command_stream (int (*get_next_byte) (void *),
   // i.e. did we just see an AND, OR, or PIPE operator
   int state;
 
-
+  command_list* command_stream = malloc(sizeof(struct command_list));
   command_list* iterate_me = malloc (sizeof(struct command_list));
   iterate_me->head = NULL;
   iterate_me->tail = NULL;
@@ -298,6 +344,8 @@ make_command_stream (int (*get_next_byte) (void *),
       print_command(command_to_append);
       printf("print our linked list of nodes\n");
       print_tree_list(iterate_me);
+      // command_t insert_me = build_command_tree(iterate_me);
+      // append_to_list(insert_me, command_stream);
       iterate_me->head = NULL;
       iterate_me->tail = NULL;
       chunk[0] = '\0';

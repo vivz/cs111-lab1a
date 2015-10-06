@@ -23,10 +23,6 @@ void append_to_list(command_t insert_me, command_list* list) {
 	}
 }
 
-int is_empty(command_list list) {
-	return (list.head == NULL);
-}
-
 command_t remove_last_node(command_list* list){
 	command_t bye=list->tail;
 	if(list->head!=NULL)
