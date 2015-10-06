@@ -218,6 +218,7 @@ command_t build_command_tree(command_list* iterate_me) {
       case AND_COMMAND:
       case OR_COMMAND:
       case PIPE_COMMAND:
+        //if the operator stack is empty
         if (operator_stack.head == NULL) {
           append_to_list(curr->command, &operator_stack);
         }
@@ -238,12 +239,22 @@ command_t build_command_tree(command_list* iterate_me) {
           }
           append_to_list(curr->command, &operator_stack);
         }
-        break;
+        break; //end of operator case
     }
 
 
     curr = curr->next;
+  }//end of reading 
+
+  while (operator_stack.head!=NULL){
+    command_t popped_operator = remove_last_node(&operator_stack);
+    command_t right_child_command = remove_last_node(&command_stack);
+    command_t left_child_command = remove_last_node(&command_stack);
+    popped_operator->u.command[0] = left_child_command;
+    popped_operator->u.command[1] = right_child_command;
+    append_to_list(popped_operator, &command_stack);
   }
+  return command_stack.tail->command;
 }
 
 
