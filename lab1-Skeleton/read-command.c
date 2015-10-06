@@ -34,8 +34,11 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   simple_command->type = SIMPLE_COMMAND;
   simple_command->u.word = malloc(20*sizeof(char*));
   simple_command->input = (char *) malloc(256);
+  simple_command->input = NULL;
   simple_command->output = (char *) malloc(256);
+  simple_command->output = NULL;
   char word_to_store[256] = ""; 
+
   for (i = 0; i < chunk_len; i++) {
 
     switch(chunk[i]) {
@@ -100,10 +103,12 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
         word_to_store[++word_len] = '\0';
     }
   }
+
   switch(status) {
     case NEXT_IS_WORD:
-      simple_command->u.word[num_words++] = (char*) malloc(256);
+      simple_command->u.word[num_words] = (char*) malloc(256);
       strcpy(simple_command->u.word[num_words],word_to_store);
+      num_words++;
       break;
     case NEXT_IS_INPUT:
       simple_command->input = (char*) malloc(256);
@@ -114,8 +119,66 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
       strcpy(simple_command->output, word_to_store);
       break;
   }
+
   simple_command->u.word[num_words] = NULL;
 }
+
+void
+parse_pair_to_operator_command(char* pair, command_t operator_command) {
+  if (strcmp(pair, "||") == 0) {
+    operator_command->type = OR_COMMAND;
+  } 
+  else if (strcmp(pair, "&&") == 0) {
+    operator_command->type = AND_COMMAND;
+  }
+  else if (pair[0] == '|') {
+    operator_command->type = PIPE_COMMAND;
+  }
+  else {
+    printf("You shouldn't be here, something went wrong\n");
+  }
+}
+
+
+void push_operator_and_command(char* chunk,
+                               char* pair,
+                               command_t command_to_append, 
+                               command_t operator_to_append,
+                               command_list* iterate_me) {
+
+    command_to_append = malloc(sizeof(struct command));
+    parse_chunk_to_command(chunk, command_to_append);
+    append_to_list(command_to_append, iterate_me);
+    chunk[0] = '\0';
+    operator_to_append = malloc(sizeof(struct command));
+    parse_pair_to_operator_command(pair, operator_to_append);
+    append_to_list(operator_to_append, iterate_me);
+}
+
+void print_tree_list(command_list* printme) {
+  command_node* curr = printme->head;
+  int count = 0;
+  char* string;
+  while (curr != NULL) {
+    switch(curr->command->type) {
+      case SIMPLE_COMMAND:
+        string = curr->command->u.word[0];
+        break;
+      case OR_COMMAND:
+        string = "||";
+        break;
+      case AND_COMMAND:
+        string = "&&";
+        break;
+      case PIPE_COMMAND:
+        string = "|";
+        break;
+    }
+    printf("node %d: type: %s\n", count++, string);
+    curr = curr->next;
+  }
+}
+
 
 command_stream_t
 make_command_stream (int (*get_next_byte) (void *),
@@ -127,56 +190,8 @@ make_command_stream (int (*get_next_byte) (void *),
   */
 
 	printf("make_command_stream\n");
+
   /*
-  command_t new_command0 = malloc(sizeof(struct command));
-  new_command0->type = SIMPLE_COMMAND;
-  new_command0->status = -1;
-  new_command0->u.word = malloc(3 * sizeof(char*));
-  new_command0->u.word[0] = "echo";
-  new_command0->u.word[1] = "a";
-  new_command0->u.word[2] = NULL;
-  new_command0->output = "out";
-
-  command_t new_command1 = malloc(sizeof(struct command));
-  new_command1->type = SIMPLE_COMMAND;
-  new_command1->status = -1;
-  new_command1->u.word = malloc(3 * sizeof(char*));
-  new_command1->u.word[0] = "cat";
-  new_command1->u.word[1] = "b";
-  new_command1->u.word[2] = NULL;
-
-  command_t new_command2 = malloc(sizeof(struct command));
-  new_command2->type = OR_COMMAND;
-  new_command2->status = -1;
-  new_command2->u.command[0] = new_command0;
-  new_command2->u.command[1] = new_command1;
-
-
-  command_list command_list_test;
-  command_list_test.head=NULL;
-  command_list_test.tail=NULL;
-
-
-
-  //populate list
-  printf("pre append to list\n");
-  append_to_list(new_command0, &command_list_test);
-  append_to_list(new_command1, &command_list_test);
-  append_to_list(new_command2, &command_list_test);
-  printf("printing list after append\n");
-  print_list(&command_list_test);
-
-  //pop
-  printf("removing last node\n");
-  remove_last_node(&command_list_test);
-
-  //print list
-  printf("pre print list\n");
-  print_list(&command_list_test);
-
-  
-  */
-
   char* test_string = "sort   a < b  > c";
   // should output "sort a<b>c"
   command_t test_command = malloc(sizeof(struct command));
@@ -185,7 +200,7 @@ make_command_stream (int (*get_next_byte) (void *),
   printf("pre print\n");
   print_command(test_command);
   printf("post print command\n");
-
+  */
 
   char c = get_next_byte(get_next_byte_argument);
   //printf("%c",c); 
@@ -203,7 +218,7 @@ make_command_stream (int (*get_next_byte) (void *),
     len++;
     c = get_next_byte(get_next_byte_argument);
 	}
-  printf("buffer: %s\n", buffer);
+  printf("==== buffer ====\n%s\n==== end buffer ====\n", buffer);
 
   char pair[3]; 
   char chunk[256] = "";
@@ -214,6 +229,12 @@ make_command_stream (int (*get_next_byte) (void *),
   // i.e. did we just see an AND, OR, or PIPE operator
   int state;
 
+
+  command_list* iterate_me = malloc (sizeof(struct command_list));
+  iterate_me->head = NULL;
+  iterate_me->tail = NULL;
+  command_t command_to_append;
+  command_t operator_to_append;
   for (i = 0; i < len; i++) {
     pair[0] = buffer[i];
     pair[1] = buffer[i+1];
@@ -221,25 +242,52 @@ make_command_stream (int (*get_next_byte) (void *),
 
     if (strcmp(pair, "&&") == 0 || strcmp(pair, "||") == 0)  {
       //push to the stack 
-      printf("and/or found\n");
-      printf("chunk: %s\n", chunk);
+      command_to_append = malloc(sizeof(struct command));
+      parse_chunk_to_command(chunk, command_to_append);
+      append_to_list(command_to_append, iterate_me);
+      printf("and or or found\n");
+      print_command(command_to_append);
       chunk[0] = '\0';
-      printf("token pair: %s\n", pair);
+      operator_to_append = malloc(sizeof(struct command));
+      parse_pair_to_operator_command(pair, operator_to_append);
+      append_to_list(operator_to_append, iterate_me);
       i++;
     } 
     else if (pair[0] == '|') {
+      command_to_append = malloc(sizeof(struct command));
+      parse_chunk_to_command(chunk, command_to_append);
+      append_to_list(command_to_append, iterate_me);
       printf("pipe found\n");
-      //push to t
-      printf("chunk: %s\n", chunk);
+      print_command(command_to_append);
+
       chunk[0] = '\0';
-      printf("token pair: %c\n", pair[0]);
+      operator_to_append = malloc(sizeof(struct command));
+      parse_pair_to_operator_command(pair, operator_to_append);
+      append_to_list(operator_to_append, iterate_me);
     }
-    else if (pair[0] == '\n') {
-      //make a new tree/node in the linked list
-      printf("chunk: %s\n", chunk);
+    else if (strcmp(pair,"\n\n") == 0)
+    {
+      command_to_append = malloc(sizeof(struct command));
+      parse_chunk_to_command(chunk, command_to_append);
+      append_to_list(command_to_append, iterate_me);
+      print_command(command_to_append);
+      printf("print our linked list of nodes\n");
+      print_tree_list(iterate_me);
+      iterate_me->head = NULL;
+      iterate_me->tail = NULL;
       chunk[0] = '\0';
-      printf("newline found\n");
+      i++;
+
+      //pop things off and implement the algorithm
     }
+    // else if (pair[0] == '\n') {
+    //   //make a new tree/node in the linked list
+    //   //if the previous symbol was a binary operator, ;
+    //   //else
+    //   //TODO: '\n\n', '\n when the command is complete', '\n when the command isn't complete.
+    //   printf("breaking off command here\n");
+    //   chunk[0] = '\0';
+    // }
     else {
       chunk_len = strlen(chunk);
       chunk[chunk_len] = pair[0];
@@ -247,10 +295,10 @@ make_command_stream (int (*get_next_byte) (void *),
     }
   }
 
-  printf("last chunk: %s ", chunk);
   return 0;
-}
 
+
+}
 
 
 command_t read_command_stream (command_stream_t s)
