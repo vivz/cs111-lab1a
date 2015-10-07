@@ -110,9 +110,11 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
 
   switch(status) {
     case NEXT_IS_WORD:
-      simple_command->u.word[num_words] = (char*) malloc(256);
-      strcpy(simple_command->u.word[num_words],word_to_store);
-      num_words++;
+      if (word_to_store[0] != '\0') {
+        simple_command->u.word[num_words] = (char*) malloc(256);
+        strcpy(simple_command->u.word[num_words],word_to_store);
+        num_words++;
+      }
       break;
     case NEXT_IS_INPUT:
       simple_command->input = (char*) malloc(256);
@@ -389,6 +391,7 @@ make_command_stream (int (*get_next_byte) (void *),
     len++;
     c = get_next_byte(get_next_byte_argument);
 	}
+  buffer[len++] = EOF;
   // printf("==== buffer ====\n%s\n==== end buffer ====\n", buffer);
 
   char pair[3]; 
@@ -450,7 +453,7 @@ make_command_stream (int (*get_next_byte) (void *),
       parse_pair_to_operator_command(pair, operator_to_append);
       append_to_list(operator_to_append, iterate_me);
     }
-    else if (strcmp(pair,"\n\n") == 0)
+    else if (strcmp(pair,"\n\n") == 0 || pair[0] == EOF)
     {
       if(INCOMPLETE_COMMAND) {
         i++;
