@@ -241,9 +241,9 @@ command_t build_command_tree(command_list* iterate_me) {
           top_command_type = operator_stack.tail->command->type;
           while (operator_precedence[current_type] <= operator_precedence[top_command_type] && 
                  operator_stack.head != NULL) {
-            remove_last_node(&operator_stack, popped_operator);
-            remove_last_node(&command_stack, right_child_command);
-            remove_last_node(&command_stack, left_child_command);
+            remove_last_node(&operator_stack, &popped_operator);
+            remove_last_node(&command_stack, &right_child_command);
+            remove_last_node(&command_stack, &left_child_command);
             printf("left child command\n");
             print_command(left_child_command);
             popped_operator->u.command[0] = left_child_command;
@@ -264,9 +264,9 @@ command_t build_command_tree(command_list* iterate_me) {
   }//end of reading 
 
   while (operator_stack.head!=NULL){
-    remove_last_node(&operator_stack, popped_operator);
-    remove_last_node(&command_stack, right_child_command);
-    remove_last_node(&command_stack, left_child_command);
+    remove_last_node(&operator_stack, &popped_operator);
+    remove_last_node(&command_stack, &right_child_command);
+    remove_last_node(&command_stack, &left_child_command);
     popped_operator->u.command[0] = left_child_command;
     popped_operator->u.command[1] = right_child_command;
     append_to_list(popped_operator, &command_stack);
@@ -338,20 +338,20 @@ make_command_stream (int (*get_next_byte) (void *),
   print_tree_list(&test_list);
 
   printf("removing node 1...\n");
-  remove_last_node(&test_list, popped_command);
+  remove_last_node(&test_list, &popped_command);
   printf("popped command_type: %d\n", popped_command->type);
   printf("print removed node\n");
   print_command(popped_command);
   
   printf("removing node 2...\n");
-  remove_last_node(&test_list, popped_command);
+  remove_last_node(&test_list, &popped_command);
   printf("popped command_type: %d\n", popped_command->type);
   printf("print removed node\n");
   print_command(popped_command);
   printf("testing list after 2 removes\n");
   print_tree_list(&test_list);
   printf("removing node 3...\n");
-  remove_last_node(&test_list, popped_command);
+  remove_last_node(&test_list, &popped_command);
   
   if(test_list.head==NULL)
   printf("yayy\n");  

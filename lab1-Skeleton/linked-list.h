@@ -19,7 +19,7 @@ typedef struct command_list {
 
 void append_to_list(command_t, command_list*);
 
-void remove_last_node(command_list*, command_t);
+void remove_last_node(command_list*, command_t*);
 
 // int is_empty(command_list* list) { return list->head == NULL; };
 

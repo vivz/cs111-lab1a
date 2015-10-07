@@ -23,14 +23,15 @@ void append_to_list(command_t insert_me, command_list* list) {
 	}
 }
 
-void remove_last_node(command_list* list, command_t popped){
-	popped = NULL;
+void remove_last_node(command_list* list, command_t* popped){
 	if (list->tail!= NULL){
-		popped = list->tail->command;
+		*popped = list->tail->command;
 		printf("hey!!\n");
-		print_command(popped);
-  		printf("popped command_type: %d\n", popped->type);
+		print_command(*popped);
+  		printf("popped command_type: %d\n", (*popped)->type);
 	}
+	else 
+		*popped=NULL;
 
 	if(list->head!=NULL)
 	{
@@ -40,7 +41,7 @@ void remove_last_node(command_list* list, command_t popped){
 		{
 			list->head=NULL;
 			list->tail=NULL;
-			popped=curr->command;
+			*popped=curr->command;
 		}
 		while (curr->next!=list->tail) {
 			curr = curr->next;
