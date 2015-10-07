@@ -164,6 +164,7 @@ parse_pair_to_operator_command(char* pair, command_t operator_command) {
   }
   else {
     printf("You shouldn't be here, something went wrong\n");
+    printf("%s\n", pair);
   }
 }
 
@@ -483,7 +484,8 @@ make_command_stream (int (*get_next_byte) (void *),
       }
     }
 
-    else if (pair[0] == ';' || pair[0] == '\n') {
+     else if (pair[0] == ';' || pair[0] == '\n') {
+   // else if (pair[0] == ';') {
       command_to_append = malloc(sizeof(struct command));
       parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);

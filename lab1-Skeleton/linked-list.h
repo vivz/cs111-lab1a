@@ -22,10 +22,6 @@ void append_to_list(command_t, command_stream*);
 
 void remove_last_node(command_stream*, command_t*);
 
-int list_size(command_stream* list) {
-	return list->size;
-}
-
 // int is_empty(command_stream* list) { return list->head == NULL; };
 
 void print_list(command_stream*);
