@@ -23,16 +23,24 @@ void append_to_list(command_t insert_me, command_list* list) {
 	}
 }
 
-command_t remove_last_node(command_list* list){
-	command_t bye=list->tail;
+void remove_last_node(command_list* list, command_t popped){
+	popped = NULL;
+	if (list->tail!= NULL){
+		popped = list->tail->command;
+		printf("hey!!\n");
+		print_command(popped);
+  		printf("popped command_type: %d\n", popped->type);
+	}
+
 	if(list->head!=NULL)
 	{
 		command_node* curr = list->head;
+		// if only one element in list
 		if(curr==list->tail)
 		{
 			list->head=NULL;
 			list->tail=NULL;
-			return curr;
+			popped=curr->command;
 		}
 		while (curr->next!=list->tail) {
 			curr = curr->next;
@@ -40,7 +48,7 @@ command_t remove_last_node(command_list* list){
 		curr->next=NULL;
 		list->tail=curr;
 	}//potential seg fault
-	return bye;
+
 }
 
 

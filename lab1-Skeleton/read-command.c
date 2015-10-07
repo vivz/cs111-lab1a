@@ -190,7 +190,13 @@ void print_tree_list(command_list* printme) {
 
 command_t build_command_tree(command_list* iterate_me) {
   command_list operator_stack;
+  operator_stack.head = NULL;
+  operator_stack.tail = NULL;
   command_list command_stack;
+  command_stack.head = NULL;
+  command_stack.tail = NULL;
+
+  command_t popped_operator, right_child_command, left_child_command;
   /*
   1) If it's a simple command, push it onto the command stack
   2) If '(' push on to operator stack
@@ -207,18 +213,25 @@ command_t build_command_tree(command_list* iterate_me) {
   int top_command_type, current_type;
   int operator_precedence[] = {1, 0, 1, 2};
 
-
+  printf("initialzing curr...\n");
   command_node* curr = iterate_me->head;
   while (curr != NULL) {
+    popped_operator = malloc(3*sizeof(struct command));
+    right_child_command = malloc(sizeof(struct command));
+    left_child_command = malloc(sizeof(struct command));
+
     current_type = curr->command->type;
     switch(current_type) {
       case SIMPLE_COMMAND:
+        printf("node is simple command\n");
+        print_command(curr->command);
         append_to_list(curr->command, &command_stack);
         break;
       case AND_COMMAND:
       case OR_COMMAND:
       case PIPE_COMMAND:
       case SEQUENCE_COMMAND:
+        printf("node is operator\n");
         //if the operator stack is empty
         if (operator_stack.head == NULL) {
           append_to_list(curr->command, &operator_stack);
@@ -228,11 +241,14 @@ command_t build_command_tree(command_list* iterate_me) {
           top_command_type = operator_stack.tail->command->type;
           while (operator_precedence[current_type] <= operator_precedence[top_command_type] && 
                  operator_stack.head != NULL) {
-            command_t popped_operator = remove_last_node(&operator_stack);
-            command_t right_child_command = remove_last_node(&command_stack);
-            command_t left_child_command = remove_last_node(&command_stack);
+            remove_last_node(&operator_stack, popped_operator);
+            remove_last_node(&command_stack, right_child_command);
+            remove_last_node(&command_stack, left_child_command);
+            printf("left child command\n");
+            print_command(left_child_command);
             popped_operator->u.command[0] = left_child_command;
             popped_operator->u.command[1] = right_child_command;
+            print_command(popped_operator);
             append_to_list(popped_operator, &command_stack);
             if (operator_stack.head != NULL) {
               top_command_type = operator_stack.tail->command->type;
@@ -248,9 +264,9 @@ command_t build_command_tree(command_list* iterate_me) {
   }//end of reading 
 
   while (operator_stack.head!=NULL){
-    command_t popped_operator = remove_last_node(&operator_stack);
-    command_t right_child_command = remove_last_node(&command_stack);
-    command_t left_child_command = remove_last_node(&command_stack);
+    remove_last_node(&operator_stack, popped_operator);
+    remove_last_node(&command_stack, right_child_command);
+    remove_last_node(&command_stack, left_child_command);
     popped_operator->u.command[0] = left_child_command;
     popped_operator->u.command[1] = right_child_command;
     append_to_list(popped_operator, &command_stack);
@@ -284,7 +300,7 @@ make_command_stream (int (*get_next_byte) (void *),
   */
 
   command_list test_list;
-  command_t popped_command;
+  command_t popped_command = malloc(sizeof(struct command));
   test_list.head = NULL;
   test_list.tail = NULL;
 
@@ -306,7 +322,8 @@ make_command_stream (int (*get_next_byte) (void *),
   new_command1->u.word[0] = "cat";
   new_command1->u.word[1] = "b";
   new_command1->u.word[2] = NULL;
-  printf("append 1\n");
+  printf("append 1 newcommand\n");
+  print_command(new_command1);
   append_to_list(new_command1, &test_list);
 
   command_t new_command2 = malloc(sizeof(struct command));
@@ -321,13 +338,20 @@ make_command_stream (int (*get_next_byte) (void *),
   print_tree_list(&test_list);
 
   printf("removing node 1...\n");
-  popped_command = remove_last_node(&test_list);
+  remove_last_node(&test_list, popped_command);
+  printf("popped command_type: %d\n", popped_command->type);
+  printf("print removed node\n");
+  print_command(popped_command);
+  
   printf("removing node 2...\n");
-  popped_command = remove_last_node(&test_list);
+  remove_last_node(&test_list, popped_command);
+  printf("popped command_type: %d\n", popped_command->type);
+  printf("print removed node\n");
+  print_command(popped_command);
   printf("testing list after 2 removes\n");
   print_tree_list(&test_list);
   printf("removing node 3...\n");
-  popped_command = remove_last_node(&test_list);
+  remove_last_node(&test_list, popped_command);
   
   if(test_list.head==NULL)
   printf("yayy\n");  
