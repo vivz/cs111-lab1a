@@ -452,17 +452,6 @@ make_command_stream (int (*get_next_byte) (void *),
       append_to_list(operator_to_append, iterate_me);
       INCOMPLETE_COMMAND = 1;
     }
-    else if (pair[0] == ';') {
-      command_to_append = malloc(sizeof(struct command));
-      parse_chunk_to_command(chunk, command_to_append);
-      append_to_list(command_to_append, iterate_me);
-      // printf("semicolon found after\n");
-      // print_command(command_to_append);
-      chunk[0] = '\0';
-      operator_to_append = malloc(sizeof(struct command));
-      parse_pair_to_operator_command(pair, operator_to_append);
-      append_to_list(operator_to_append, iterate_me);
-    }
     else if (strcmp(pair,"\n\n") == 0 || pair[0] == EOF)
     {
       if(INCOMPLETE_COMMAND) {
@@ -494,6 +483,17 @@ make_command_stream (int (*get_next_byte) (void *),
       }
     }
 
+    else if (pair[0] == ';' || pair[0] == '\n') {
+      command_to_append = malloc(sizeof(struct command));
+      parse_chunk_to_command(chunk, command_to_append);
+      append_to_list(command_to_append, iterate_me);
+      // printf("semicolon found after\n");
+      // print_command(command_to_append);
+      chunk[0] = '\0';
+      operator_to_append = malloc(sizeof(struct command));
+      parse_pair_to_operator_command(pair, operator_to_append);
+      append_to_list(operator_to_append, iterate_me);
+    }
     else if (pair[0] == '#') {
       while (buffer[i] != '\n') {
         i++;
