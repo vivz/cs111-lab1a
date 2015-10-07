@@ -151,7 +151,7 @@ void push_operator_and_command(char* chunk,
                                char* pair,
                                command_t command_to_append, 
                                command_t operator_to_append,
-                               command_list* iterate_me) {
+                               command_stream* iterate_me) {
 
     command_to_append = malloc(sizeof(struct command));
     parse_chunk_to_command(chunk, command_to_append);
@@ -162,7 +162,7 @@ void push_operator_and_command(char* chunk,
     append_to_list(operator_to_append, iterate_me);
 }
 
-void print_tree_list(command_list* printme) {
+void print_tree_list(command_stream* printme) {
   command_node* curr = printme->head;
   int count = 0;
   char* string;
@@ -190,11 +190,11 @@ void print_tree_list(command_list* printme) {
   }
 }
 
-command_t build_command_tree(command_list* iterate_me) {
-  command_list operator_stack;
+command_t build_command_tree(command_stream* iterate_me) {
+  command_stream operator_stack;
   operator_stack.head = NULL;
   operator_stack.tail = NULL;
-  command_list command_stack;
+  command_stream command_stack;
   command_stack.head = NULL;
   command_stack.tail = NULL;
 
@@ -288,7 +288,7 @@ make_command_stream (int (*get_next_byte) (void *),
      You can also use external functions defined in the GNU C Library.
   */
 
-	printf("make_command_stream\n");
+	// printf("make_command_stream\n");
 
   /*
   char* test_string = "sort   a < b  > c";
@@ -302,7 +302,7 @@ make_command_stream (int (*get_next_byte) (void *),
   */
 
   /*
-  command_list test_list;
+  command_stream test_list;
   command_t popped_command = malloc(sizeof(struct command));
   test_list.head = NULL;
   test_list.tail = NULL;
@@ -362,9 +362,9 @@ make_command_stream (int (*get_next_byte) (void *),
   printf("nooo\n");
 
 
-  command_list command_list_test;
-  command_list_test.head = NULL;
-  command_list_test.tail = NULL;
+  command_stream command_stream_test;
+  command_stream_test.head = NULL;
+  command_stream_test.tail = NULL;
 
   command_t new_command3 = malloc(sizeof(struct command));
   new_command3->type = SUBSHELL_COMMAND;
@@ -402,8 +402,8 @@ make_command_stream (int (*get_next_byte) (void *),
 
   int INCOMPLETE_COMMAND = 0;
 
-  command_list* command_stream = malloc(sizeof(struct command_list));
-  command_list* iterate_me = malloc (sizeof(struct command_list));
+  command_stream* command_list = malloc(sizeof(struct command_stream));
+  command_stream* iterate_me = malloc (sizeof(struct command_stream));
   iterate_me->head = NULL;
   iterate_me->tail = NULL;
   command_t command_to_append;
@@ -468,10 +468,10 @@ make_command_stream (int (*get_next_byte) (void *),
         // printf("trying to build tree\n");
 
         command_t insert_me = build_command_tree(iterate_me);
-        printf("built tree\n");
-        print_command(insert_me);
+        // printf("built tree\n");
+        // print_command(insert_me);
 
-        append_to_list(insert_me, command_stream);
+        append_to_list(insert_me, command_list);
         iterate_me->head = NULL;
         iterate_me->tail = NULL;
         chunk[0] = '\0';
@@ -493,8 +493,8 @@ make_command_stream (int (*get_next_byte) (void *),
       INCOMPLETE_COMMAND = 0;
     }
   }
-  command_stream->current = command_stream->head;
-  return command_stream;
+  command_list->current = command_list->head;
+  return command_list;
 
 
 }
@@ -502,10 +502,15 @@ make_command_stream (int (*get_next_byte) (void *),
 
 command_t read_command_stream (command_stream_t s)
 {
-  // command_t return_me = s->current->command;
-  // s->current = s->current->next;
-  // return return_me;
+  if (s->current == NULL) {
+    return 0;
+  }
+  else {
+    command_t return_me = s->current->command;
+    s->current = s->current->next;
+    return return_me;
+  }
   /* FIXME: Replace this with your implementation too.  */
-  error (1, 0, "command reading not yet implemented");
-  return 0;
+  // error (1, 0, "command reading not yet implemented");
+  // return 0;
 }

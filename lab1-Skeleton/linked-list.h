@@ -11,16 +11,16 @@ typedef struct command_node {
 	command_t command;
 } command_node;
 
-typedef struct command_list {
+typedef struct command_stream {
 	command_node* head;
 	command_node* tail;
 	command_node* current;
-} command_list;
+} command_stream;
 
-void append_to_list(command_t, command_list*);
+void append_to_list(command_t, command_stream*);
 
-void remove_last_node(command_list*, command_t*);
+void remove_last_node(command_stream*, command_t*);
 
-// int is_empty(command_list* list) { return list->head == NULL; };
+// int is_empty(command_stream* list) { return list->head == NULL; };
 
-void print_list(command_list*);
+void print_list(command_stream*);

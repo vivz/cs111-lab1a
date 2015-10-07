@@ -2,7 +2,7 @@
 #include "command.h"
 #include "command-internals.h"
 
-void append_to_list(command_t insert_me, command_list* list) {
+void append_to_list(command_t insert_me, command_stream* list) {
 
 	//creating a node
 	command_node* node_to_insert = malloc(sizeof(command_node));
@@ -23,7 +23,7 @@ void append_to_list(command_t insert_me, command_list* list) {
 	}
 }
 
-void remove_last_node(command_list* list, command_t* popped){
+void remove_last_node(command_stream* list, command_t* popped){
 	if (list->tail!= NULL){
 		*popped = list->tail->command;
 		// printf("hey!!\n");
@@ -55,7 +55,7 @@ void remove_last_node(command_list* list, command_t* popped){
 
 
 
-void print_list(command_list* list) {
+void print_list(command_stream* list) {
 
 	command_node* curr = list->head;
 	
