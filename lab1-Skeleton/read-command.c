@@ -35,6 +35,7 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
 
   simple_command->type = SIMPLE_COMMAND;
   simple_command->u.word = malloc(20*sizeof(char*));
+  simple_command->u.word[0]=""; 
   simple_command->input = (char *) malloc(256);
   simple_command->input = NULL;
   simple_command->output = (char *) malloc(256);
@@ -108,6 +109,14 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
     }
   }
 
+  //printf("last word: %s\n", word_to_store);
+
+  // if last word is certain characters...
+  if (strcmp(word_to_store, "`") == 0) {
+    error (1, 0, "command not valid");
+  }
+
+
   switch(status) {
     case NEXT_IS_WORD:
       if (word_to_store[0] != '\0') {
@@ -117,12 +126,22 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
       }
       break;
     case NEXT_IS_INPUT:
-      simple_command->input = (char*) malloc(256);
-      strcpy(simple_command->input, word_to_store);
+      if (word_to_store[0] == '\0') {
+        error (1, 0, "command has no input");
+      }
+      else {
+        simple_command->input = (char*) malloc(256);
+        strcpy(simple_command->input, word_to_store);
+      }
       break;
     case NEXT_IS_OUTPUT:
-      simple_command->output = (char*) malloc(256);
-      strcpy(simple_command->output, word_to_store);
+      if (word_to_store[0] == '\0') {
+        error (1, 0, "command has no output");
+      }
+      else {
+        simple_command->output = (char*) malloc(256);
+        strcpy(simple_command->output, word_to_store);
+      }
       break;
   }
 
@@ -146,22 +165,6 @@ parse_pair_to_operator_command(char* pair, command_t operator_command) {
   else {
     printf("You shouldn't be here, something went wrong\n");
   }
-}
-
-
-void push_operator_and_command(char* chunk,
-                               char* pair,
-                               command_t command_to_append, 
-                               command_t operator_to_append,
-                               command_stream* iterate_me) {
-
-    command_to_append = malloc(sizeof(struct command));
-    parse_chunk_to_command(chunk, command_to_append);
-    append_to_list(command_to_append, iterate_me);
-    chunk[0] = '\0';
-    operator_to_append = malloc(sizeof(struct command));
-    parse_pair_to_operator_command(pair, operator_to_append);
-    append_to_list(operator_to_append, iterate_me);
 }
 
 void print_tree_list(command_stream* printme) {
@@ -248,8 +251,10 @@ command_t build_command_tree(command_stream* iterate_me) {
             remove_last_node(&operator_stack, &popped_operator);
             remove_last_node(&command_stack, &right_child_command);
             remove_last_node(&command_stack, &left_child_command);
-            // printf("left child command\n");
-            // print_command(left_child_command);
+            if (left_child_command->u.word[0] == '\0' || 
+                right_child_command->u.word[0] == '\0') {
+              error (1, 0, "incomplete command!");
+            }
             popped_operator->u.command[0] = left_child_command;
             popped_operator->u.command[1] = right_child_command;
             // print_command(popped_operator);
@@ -271,6 +276,11 @@ command_t build_command_tree(command_stream* iterate_me) {
     remove_last_node(&operator_stack, &popped_operator);
     remove_last_node(&command_stack, &right_child_command);
     remove_last_node(&command_stack, &left_child_command);
+    if (left_child_command->u.word[0] == '\0' || 
+        right_child_command->u.word[0] == '\0') {
+      error (1, 0, "incomplete command!");
+    }
+
     popped_operator->u.command[0] = left_child_command;
     popped_operator->u.command[1] = right_child_command;
     append_to_list(popped_operator, &command_stack);
