@@ -108,6 +108,10 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
     }
   }
 
+  if (strcmp(word_to_store, "`") == 0) {
+    error(1, 0, "command not valid");
+  }
+
   switch(status) {
     case NEXT_IS_WORD:
       if (word_to_store[0] != '\0') {
@@ -117,12 +121,22 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
       }
       break;
     case NEXT_IS_INPUT:
-      simple_command->input = (char*) malloc(256);
-      strcpy(simple_command->input, word_to_store);
+      if (word_to_store[0] == '\0') {
+        error(1,0, "< seen with no input");
+      }
+      else {
+        simple_command->input = (char*) malloc(256);
+        strcpy(simple_command->input, word_to_store);
+      }
       break;
     case NEXT_IS_OUTPUT:
-      simple_command->output = (char*) malloc(256);
-      strcpy(simple_command->output, word_to_store);
+      if (word_to_store[0] == '\0') {
+        error(1,0, "> seen with no output");
+      }
+      else {
+        simple_command->output = (char*) malloc(256);
+        strcpy(simple_command->output, word_to_store);
+      }
       break;
   }
 
