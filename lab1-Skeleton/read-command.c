@@ -30,9 +30,7 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   int num_words = 0;
   int status = NEXT_IS_WORD;
   int word_len;
-
-  // TODO: check for parenthesis maybe
-
+  int num_parens = 0;
   simple_command->type = SIMPLE_COMMAND;
   simple_command->u.word = malloc(20*sizeof(char*));
   simple_command->input = (char *) malloc(256);
@@ -42,7 +40,9 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   char word_to_store[256] = ""; 
 
   for (i = 0; i < chunk_len; i++) {
-
+    if (chunk[i] == '(' || chunk[i] == ')') {
+      num_parens++;
+    }
     switch(chunk[i]) {
       case '<':
         // signals end of word
@@ -141,6 +141,10 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
         strcpy(simple_command->output, word_to_store);
       }
       break;
+  }
+
+  if (num_parens % 2 != 0) {
+    error(1,0, "mismatched parentheses");
   }
 
   simple_command->u.word[num_words] = NULL;
