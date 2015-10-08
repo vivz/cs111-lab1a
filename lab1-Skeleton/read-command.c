@@ -61,6 +61,9 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
         status = NEXT_IS_INPUT;
         break;
       case '>':
+        if (status == NEXT_IS_OUTPUT) {
+          error(1,0, "> can't follow >");
+        }
         if (word_to_store[0] == '\0') {
           ;
         }
@@ -141,6 +144,9 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   }
 
   simple_command->u.word[num_words] = NULL;
+  if (num_words == 0) {
+    error(1,0,"empty command");
+  }
 }
 
 void
@@ -316,6 +322,7 @@ command_t build_command_tree(command_stream* iterate_me) {
     popped_operator->u.command[1] = right_child_command;
     append_to_list(popped_operator, &command_stack);
   }
+  // check and make sure tail command has words
   return command_stack.tail->command;
 }
 
@@ -514,7 +521,6 @@ make_command_stream (int (*get_next_byte) (void *),
         command_t insert_me = build_command_tree(iterate_me);
         // printf("built tree\n");
         // print_command(insert_me);
-
         append_to_list(insert_me, command_list);
         iterate_me->head = NULL;
         iterate_me->tail = NULL;
