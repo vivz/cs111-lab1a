@@ -5,16 +5,10 @@
 
 #include <error.h>
 
-/* FIXME: You may need to add #include directives, macro definitions,
-   static function definitions, etc.  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "linked-list.h"
-
-/* FIXME: Define the type 'struct command_stream' here.  This should
-   complete the incomplete type declaration in command.h.  */
 
 enum chunk_status {
   NEXT_IS_INPUT,
@@ -296,96 +290,6 @@ command_stream_t
 make_command_stream (int (*get_next_byte) (void *),
 		     void *get_next_byte_argument)
 {
-  /* FIXME: Replace this with your implementation.  You may need to
-     add auxiliary functions and otherwise modify the source code.
-     You can also use external functions defined in the GNU C Library.
-  */
-
-	// printf("make_command_stream\n");
-
-  /*
-  char* test_string = "sort   a < b  > c";
-  // should output "sort a<b>c"
-  command_t test_command = malloc(sizeof(struct command));
-  printf("pre parse\n");
-  parse_chunk_to_command(test_string, test_command);
-  printf("pre print\n");
-  print_command(test_command);
-  printf("post print command\n");
-  */
-
-  /*
-  command_stream test_list;
-  command_t popped_command = malloc(sizeof(struct command));
-  test_list.head = NULL;
-  test_list.tail = NULL;
-
-  command_t new_command0 = malloc(sizeof(struct command));
-  new_command0->type = SIMPLE_COMMAND;
-  new_command0->status = -1;
-  new_command0->u.word = malloc(3 * sizeof(char*));
-  new_command0->u.word[0] = "echo";
-  new_command0->u.word[1] = "a";
-  new_command0->u.word[2] = NULL;
-  new_command0->output = "out";
-  printf("append 0\n");
-  append_to_list(new_command0, &test_list);
-
-  command_t new_command1 = malloc(sizeof(struct command));
-  new_command1->type = SIMPLE_COMMAND;
-  new_command1->status = -1;
-  new_command1->u.word = malloc(3 * sizeof(char*));
-  new_command1->u.word[0] = "cat";
-  new_command1->u.word[1] = "b";
-  new_command1->u.word[2] = NULL;
-  printf("append 1 newcommand\n");
-  print_command(new_command1);
-  append_to_list(new_command1, &test_list);
-
-  command_t new_command2 = malloc(sizeof(struct command));
-  new_command2->type = OR_COMMAND;
-  new_command2->status = -1;
-  new_command2->u.command[0] = new_command0;
-  new_command2->u.command[1] = new_command1;
-  printf("append 2\n");
-  append_to_list(new_command2, &test_list);
-
-  printf("testing list after appends\n");
-  print_tree_list(&test_list);
-
-  printf("removing node 1...\n");
-  remove_last_node(&test_list, &popped_command);
-  printf("popped command_type: %d\n", popped_command->type);
-  printf("print removed node\n");
-  print_command(popped_command);
-  
-  printf("removing node 2...\n");
-  remove_last_node(&test_list, &popped_command);
-  printf("popped command_type: %d\n", popped_command->type);
-  printf("print removed node\n");
-  print_command(popped_command);
-  printf("testing list after 2 removes\n");
-  print_tree_list(&test_list);
-  printf("removing node 3...\n");
-  remove_last_node(&test_list, &popped_command);
-  
-  if(test_list.head==NULL)
-  printf("yayy\n");  
-  else
-  printf("nooo\n");
-
-
-  command_stream command_stream_test;
-  command_stream_test.head = NULL;
-  command_stream_test.tail = NULL;
-
-  command_t new_command3 = malloc(sizeof(struct command));
-  new_command3->type = SUBSHELL_COMMAND;
-  new_command3->status = -1;
-  new_command3->u.subshell_command = new_command0;
-
-
-  */
   char c = get_next_byte(get_next_byte_argument);
   //printf("%c",c); 
 
@@ -525,7 +429,4 @@ command_t read_command_stream (command_stream_t s)
     s->current = s->current->next;
     return return_me;
   }
-  /* FIXME: Replace this with your implementation too.  */
-  // error (1, 0, "command reading not yet implemented");
-  // return 0;
 }

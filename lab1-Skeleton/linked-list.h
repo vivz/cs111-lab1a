@@ -15,7 +15,6 @@ typedef struct command_stream {
 	command_node* head;
 	command_node* tail;
 	command_node* current;
-	int size;
 } command_stream;
 
 void append_to_list(command_t, command_stream*);
