@@ -5,10 +5,16 @@
 
 #include <error.h>
 
+/* FIXME: You may need to add #include directives, macro definitions,
+   static function definitions, etc.  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "linked-list.h"
+
+/* FIXME: Define the type 'struct command_stream' here.  This should
+   complete the incomplete type declaration in command.h.  */
 
 enum chunk_status {
   NEXT_IS_INPUT,
@@ -29,7 +35,6 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
 
   simple_command->type = SIMPLE_COMMAND;
   simple_command->u.word = malloc(20*sizeof(char*));
-  simple_command->u.word[0]=""; 
   simple_command->input = (char *) malloc(256);
   simple_command->input = NULL;
   simple_command->output = (char *) malloc(256);
@@ -103,14 +108,6 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
     }
   }
 
-  //printf("last word: %s\n", word_to_store);
-
-  // if last word is certain characters...
-  if (strcmp(word_to_store, "`") == 0) {
-    error (1, 0, "command not valid");
-  }
-
-
   switch(status) {
     case NEXT_IS_WORD:
       if (word_to_store[0] != '\0') {
@@ -120,22 +117,12 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
       }
       break;
     case NEXT_IS_INPUT:
-      if (word_to_store[0] == '\0') {
-        error (1, 0, "command has no input");
-      }
-      else {
-        simple_command->input = (char*) malloc(256);
-        strcpy(simple_command->input, word_to_store);
-      }
+      simple_command->input = (char*) malloc(256);
+      strcpy(simple_command->input, word_to_store);
       break;
     case NEXT_IS_OUTPUT:
-      if (word_to_store[0] == '\0') {
-        error (1, 0, "command has no output");
-      }
-      else {
-        simple_command->output = (char*) malloc(256);
-        strcpy(simple_command->output, word_to_store);
-      }
+      simple_command->output = (char*) malloc(256);
+      strcpy(simple_command->output, word_to_store);
       break;
   }
 
@@ -158,14 +145,24 @@ parse_pair_to_operator_command(char* pair, command_t operator_command) {
   }
   else {
     printf("You shouldn't be here, something went wrong\n");
-    printf("%s\n", pair);
   }
 }
 
-/*
-print function for debugging purposes
-given a command stream, prints out nodes of the list with single words 
-or characters representing the node
+
+void push_operator_and_command(char* chunk,
+                               char* pair,
+                               command_t command_to_append, 
+                               command_t operator_to_append,
+                               command_stream* iterate_me) {
+
+    command_to_append = malloc(sizeof(struct command));
+    parse_chunk_to_command(chunk, command_to_append);
+    append_to_list(command_to_append, iterate_me);
+    chunk[0] = '\0';
+    operator_to_append = malloc(sizeof(struct command));
+    parse_pair_to_operator_command(pair, operator_to_append);
+    append_to_list(operator_to_append, iterate_me);
+}
 
 void print_tree_list(command_stream* printme) {
   command_node* curr = printme->head;
@@ -188,15 +185,12 @@ void print_tree_list(command_stream* printme) {
       case SEQUENCE_COMMAND:
         string = ";";
         break;
-      case SUBSHELL_COMMAND:
-        break;
 
     }
     printf("node %d: type: %s\n", count++, string);
     curr = curr->next;
   }
 }
-*/
 
 command_t build_command_tree(command_stream* iterate_me) {
   command_stream operator_stack;
@@ -254,10 +248,8 @@ command_t build_command_tree(command_stream* iterate_me) {
             remove_last_node(&operator_stack, &popped_operator);
             remove_last_node(&command_stack, &right_child_command);
             remove_last_node(&command_stack, &left_child_command);
-            if (left_child_command->u.word[0] == '\0' || 
-                right_child_command->u.word[0] == '\0') {
-              error (1, 0, "incomplete command!");
-            }
+            // printf("left child command\n");
+            // print_command(left_child_command);
             popped_operator->u.command[0] = left_child_command;
             popped_operator->u.command[1] = right_child_command;
             // print_command(popped_operator);
@@ -279,11 +271,6 @@ command_t build_command_tree(command_stream* iterate_me) {
     remove_last_node(&operator_stack, &popped_operator);
     remove_last_node(&command_stack, &right_child_command);
     remove_last_node(&command_stack, &left_child_command);
-    if (left_child_command->u.word[0] == '\0' || 
-        right_child_command->u.word[0] == '\0') {
-      error (1, 0, "incomplete command!");
-    }
-
     popped_operator->u.command[0] = left_child_command;
     popped_operator->u.command[1] = right_child_command;
     append_to_list(popped_operator, &command_stack);
@@ -296,8 +283,98 @@ command_t build_command_tree(command_stream* iterate_me) {
 
 command_stream_t
 make_command_stream (int (*get_next_byte) (void *),
-		     void *get_next_byte_argument)
+         void *get_next_byte_argument)
 {
+  /* FIXME: Replace this with your implementation.  You may need to
+     add auxiliary functions and otherwise modify the source code.
+     You can also use external functions defined in the GNU C Library.
+  */
+
+  // printf("make_command_stream\n");
+
+  /*
+  char* test_string = "sort   a < b  > c";
+  // should output "sort a<b>c"
+  command_t test_command = malloc(sizeof(struct command));
+  printf("pre parse\n");
+  parse_chunk_to_command(test_string, test_command);
+  printf("pre print\n");
+  print_command(test_command);
+  printf("post print command\n");
+  */
+
+  /*
+  command_stream test_list;
+  command_t popped_command = malloc(sizeof(struct command));
+  test_list.head = NULL;
+  test_list.tail = NULL;
+
+  command_t new_command0 = malloc(sizeof(struct command));
+  new_command0->type = SIMPLE_COMMAND;
+  new_command0->status = -1;
+  new_command0->u.word = malloc(3 * sizeof(char*));
+  new_command0->u.word[0] = "echo";
+  new_command0->u.word[1] = "a";
+  new_command0->u.word[2] = NULL;
+  new_command0->output = "out";
+  printf("append 0\n");
+  append_to_list(new_command0, &test_list);
+
+  command_t new_command1 = malloc(sizeof(struct command));
+  new_command1->type = SIMPLE_COMMAND;
+  new_command1->status = -1;
+  new_command1->u.word = malloc(3 * sizeof(char*));
+  new_command1->u.word[0] = "cat";
+  new_command1->u.word[1] = "b";
+  new_command1->u.word[2] = NULL;
+  printf("append 1 newcommand\n");
+  print_command(new_command1);
+  append_to_list(new_command1, &test_list);
+
+  command_t new_command2 = malloc(sizeof(struct command));
+  new_command2->type = OR_COMMAND;
+  new_command2->status = -1;
+  new_command2->u.command[0] = new_command0;
+  new_command2->u.command[1] = new_command1;
+  printf("append 2\n");
+  append_to_list(new_command2, &test_list);
+
+  printf("testing list after appends\n");
+  print_tree_list(&test_list);
+
+  printf("removing node 1...\n");
+  remove_last_node(&test_list, &popped_command);
+  printf("popped command_type: %d\n", popped_command->type);
+  printf("print removed node\n");
+  print_command(popped_command);
+  
+  printf("removing node 2...\n");
+  remove_last_node(&test_list, &popped_command);
+  printf("popped command_type: %d\n", popped_command->type);
+  printf("print removed node\n");
+  print_command(popped_command);
+  printf("testing list after 2 removes\n");
+  print_tree_list(&test_list);
+  printf("removing node 3...\n");
+  remove_last_node(&test_list, &popped_command);
+  
+  if(test_list.head==NULL)
+  printf("yayy\n");  
+  else
+  printf("nooo\n");
+
+
+  command_stream command_stream_test;
+  command_stream_test.head = NULL;
+  command_stream_test.tail = NULL;
+
+  command_t new_command3 = malloc(sizeof(struct command));
+  new_command3->type = SUBSHELL_COMMAND;
+  new_command3->status = -1;
+  new_command3->u.subshell_command = new_command0;
+
+
+  */
   char c = get_next_byte(get_next_byte_argument);
   //printf("%c",c); 
 
@@ -308,12 +385,12 @@ make_command_stream (int (*get_next_byte) (void *),
 
   char buffer[1024] = "";
   int len = 0;
-	while (c != EOF)
- 	{
+  while (c != EOF)
+  {
     buffer[len]=c;
     len++;
     c = get_next_byte(get_next_byte_argument);
-	}
+  }
   buffer[len++] = EOF;
   // printf("==== buffer ====\n%s\n==== end buffer ====\n", buffer);
 
@@ -365,6 +442,17 @@ make_command_stream (int (*get_next_byte) (void *),
       append_to_list(operator_to_append, iterate_me);
       INCOMPLETE_COMMAND = 1;
     }
+    else if (pair[0] == ';') {
+      command_to_append = malloc(sizeof(struct command));
+      parse_chunk_to_command(chunk, command_to_append);
+      append_to_list(command_to_append, iterate_me);
+      // printf("semicolon found after\n");
+      // print_command(command_to_append);
+      chunk[0] = '\0';
+      operator_to_append = malloc(sizeof(struct command));
+      parse_pair_to_operator_command(pair, operator_to_append);
+      append_to_list(operator_to_append, iterate_me);
+    }
     else if (strcmp(pair,"\n\n") == 0 || pair[0] == EOF)
     {
       if(INCOMPLETE_COMMAND) {
@@ -396,18 +484,6 @@ make_command_stream (int (*get_next_byte) (void *),
       }
     }
 
-     else if (pair[0] == ';' || pair[0] == '\n') {
-   // else if (pair[0] == ';') {
-      command_to_append = malloc(sizeof(struct command));
-      parse_chunk_to_command(chunk, command_to_append);
-      append_to_list(command_to_append, iterate_me);
-      // printf("semicolon found after\n");
-      // print_command(command_to_append);
-      chunk[0] = '\0';
-      operator_to_append = malloc(sizeof(struct command));
-      parse_pair_to_operator_command(pair, operator_to_append);
-      append_to_list(operator_to_append, iterate_me);
-    }
     else if (pair[0] == '#') {
       while (buffer[i] != '\n') {
         i++;
@@ -437,4 +513,7 @@ command_t read_command_stream (command_stream_t s)
     s->current = s->current->next;
     return return_me;
   }
+  /* FIXME: Replace this with your implementation too.  */
+  // error (1, 0, "command reading not yet implemented");
+  // return 0;
 }
