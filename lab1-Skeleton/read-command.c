@@ -262,6 +262,19 @@ command_t build_command_tree(command_stream* iterate_me) {
             remove_last_node(&operator_stack, &popped_operator);
             remove_last_node(&command_stack, &right_child_command);
             remove_last_node(&command_stack, &left_child_command);
+
+            if (left_child_command->type == SIMPLE_COMMAND){
+              if (left_child_command->u.word[0] == '\0'){
+                error(1,0, "incomplete command");
+              }
+            }
+
+            if (right_child_command->type == SIMPLE_COMMAND){
+              if (right_child_command->u.word[0] == '\0'){
+                error(1,0, "incomplete command");
+              }
+            }
+
             // printf("left child command\n");
             // print_command(left_child_command);
             popped_operator->u.command[0] = left_child_command;
@@ -285,6 +298,18 @@ command_t build_command_tree(command_stream* iterate_me) {
     remove_last_node(&operator_stack, &popped_operator);
     remove_last_node(&command_stack, &right_child_command);
     remove_last_node(&command_stack, &left_child_command);
+
+    if (left_child_command->type == SIMPLE_COMMAND){
+      if (left_child_command->u.word[0] == '\0'){
+        error(1,0, "incomplete command");
+      }
+    }
+    if (right_child_command->type == SIMPLE_COMMAND){
+      if (right_child_command->u.word[0] == '\0'){
+        error(1,0, "incomplete command");
+      }
+    }
+
     popped_operator->u.command[0] = left_child_command;
     popped_operator->u.command[1] = right_child_command;
     append_to_list(popped_operator, &command_stack);
