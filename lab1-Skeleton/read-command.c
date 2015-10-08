@@ -298,6 +298,8 @@ command_t build_command_tree(command_stream* iterate_me) {
     remove_last_node(&operator_stack, &popped_operator);
     remove_last_node(&command_stack, &right_child_command);
     remove_last_node(&command_stack, &left_child_command);
+    // print_command(left_child_command);
+    // print_command(right_child_command);
 
     if (left_child_command->type == SIMPLE_COMMAND){
       if (left_child_command->u.word[0] == '\0'){
@@ -494,7 +496,7 @@ make_command_stream (int (*get_next_byte) (void *),
     }
     else if (strcmp(pair,"\n\n") == 0 || pair[0] == EOF)
     {
-      if(INCOMPLETE_COMMAND) {
+      if(INCOMPLETE_COMMAND && pair[0]!= EOF) {
         i++;
       }
       else {
@@ -522,6 +524,22 @@ make_command_stream (int (*get_next_byte) (void *),
         //pop things off and implement the algorithm
       }
     }
+
+    else if (pair[0] == '&') {
+      error(1,0,"ampersands come in twos");
+    }
+    ////////////////////////////
+    else if(pair[0]=='\n' )
+    {
+      int counter=1;
+      while(buffer[i+counter]==' ')
+      {
+        counter++;
+      }
+      if (buffer[counter+i]==';'||buffer[i+counter]=='|')
+        error(1,0,"you don't start a line with operator\n");
+    }
+    /////////////
 
     else if (pair[0] == '#') {
       while (buffer[i] != '\n') {
