@@ -162,6 +162,11 @@ parse_pair_to_operator_command(char* pair, command_t operator_command) {
   }
 }
 
+/*
+print function for debugging purposes
+given a command stream, prints out nodes of the list with single words 
+or characters representing the node
+
 void print_tree_list(command_stream* printme) {
   command_node* curr = printme->head;
   int count = 0;
@@ -183,12 +188,15 @@ void print_tree_list(command_stream* printme) {
       case SEQUENCE_COMMAND:
         string = ";";
         break;
+      case SUBSHELL_COMMAND:
+        break;
 
     }
     printf("node %d: type: %s\n", count++, string);
     curr = curr->next;
   }
 }
+*/
 
 command_t build_command_tree(command_stream* iterate_me) {
   command_stream operator_stack;
