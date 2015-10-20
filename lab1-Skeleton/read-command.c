@@ -30,7 +30,7 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   int num_words = 0;
   int status = NEXT_IS_WORD;
   int word_len;
-  int num_parens = 0;
+ // int num_parens = 0;
   simple_command->type = SIMPLE_COMMAND;
   simple_command->u.word = malloc(20*sizeof(char*));
   simple_command->input = (char *) malloc(256);
@@ -40,9 +40,9 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   char word_to_store[256] = ""; 
 
   for (i = 0; i < chunk_len; i++) {
-    if (chunk[i] == '(' || chunk[i] == ')') {
-      num_parens++;
-    }
+    // if (chunk[i] == '(' || chunk[i] == ')') {
+    //   // num_parens++;
+    // }
     switch(chunk[i]) {
       case '<':
         // signals end of word
@@ -142,11 +142,11 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
       }
       break;
   }
-
+/*
   if (num_parens % 2 != 0) {
     error(1,0, "mismatched parentheses");
   }
-
+*/
   simple_command->u.word[num_words] = NULL;
   if (num_words == 0) {
     error(1,0,"empty command");
@@ -502,7 +502,8 @@ make_command_stream (int (*get_next_byte) (void *),
   char chunk[256] = "";
   int chunk_len;
   int i = 0;
-
+  int num_open_parens = 0;
+  int num_close_parens = 0;
   // is command complete
   // i.e. did we just see an AND, OR, or PIPE operator
 
@@ -539,6 +540,7 @@ make_command_stream (int (*get_next_byte) (void *),
       operator_to_append = malloc(sizeof(struct command));
       parse_pair_to_operator_command(pair, operator_to_append);
       append_to_list(operator_to_append, iterate_me);
+      num_open_parens++;
     }
 
     else if (pair[0] == ')') {
@@ -551,6 +553,7 @@ make_command_stream (int (*get_next_byte) (void *),
       operator_to_append = malloc(sizeof(struct command));
       parse_pair_to_operator_command(pair, operator_to_append);
       append_to_list(operator_to_append, iterate_me);
+      num_close_parens++;
     }
 
     else if (pair[0] == '|') {
@@ -578,6 +581,10 @@ make_command_stream (int (*get_next_byte) (void *),
     }
     else if (strcmp(pair,"\n\n") == 0 || pair[0] == EOF)
     {
+
+      if (num_close_parens != num_open_parens) {
+        error(1,0,"mismatched parens");
+      }
       if(INCOMPLETE_COMMAND && pair[0]!= EOF) {
         i++;
       }
