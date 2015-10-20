@@ -19,7 +19,7 @@
 enum chunk_status {
   NEXT_IS_INPUT,
   NEXT_IS_OUTPUT,
-  NEXT_IS_WORD
+  NEXT_IS_WORD,
 };
 
 
@@ -509,7 +509,7 @@ make_command_stream (int (*get_next_byte) (void *),
 
 
   int INCOMPLETE_COMMAND = 0;
-
+  int PREV_WAS_CLOSE_PARENS = 0;
   command_stream* command_list = malloc(sizeof(struct command_stream));
   command_stream* iterate_me = malloc (sizeof(struct command_stream));
   iterate_me->head = NULL;
@@ -524,7 +524,7 @@ make_command_stream (int (*get_next_byte) (void *),
     if (strcmp(pair, "&&") == 0 || strcmp(pair, "||") == 0)  {
       //push to the stack 
       command_to_append = malloc(sizeof(struct command));
-      if (strlen(chunk) != 0) parse_chunk_to_command(chunk, command_to_append);
+      if (PREV_WAS_CLOSE_PARENS == 0) parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
       // printf("and or or found after\n");
       // print_command(command_to_append);
@@ -533,6 +533,7 @@ make_command_stream (int (*get_next_byte) (void *),
       parse_pair_to_operator_command(pair, operator_to_append);
       append_to_list(operator_to_append, iterate_me);
       INCOMPLETE_COMMAND = 1;
+      PREV_WAS_CLOSE_PARENS = 0;
       i++;
     } 
     else if (pair[0] == '(') {
@@ -545,7 +546,8 @@ make_command_stream (int (*get_next_byte) (void *),
 
     else if (pair[0] == ')') {
       command_to_append = malloc(sizeof(struct command));
-      if (strlen(chunk) != 0) parse_chunk_to_command(chunk, command_to_append);
+      if (PREV_WAS_CLOSE_PARENS == 0)
+          parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
       // printf("and or or found after\n");
       // print_command(command_to_append);
@@ -554,11 +556,13 @@ make_command_stream (int (*get_next_byte) (void *),
       parse_pair_to_operator_command(pair, operator_to_append);
       append_to_list(operator_to_append, iterate_me);
       num_close_parens++;
+      PREV_WAS_CLOSE_PARENS = 1;
     }
 
     else if (pair[0] == '|') {
       command_to_append = malloc(sizeof(struct command));
-      if (strlen(chunk) != 0) parse_chunk_to_command(chunk, command_to_append);
+      if (PREV_WAS_CLOSE_PARENS== 0) 
+          parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
       // printf("pipe found after\n");
       // print_command(command_to_append);
@@ -567,10 +571,11 @@ make_command_stream (int (*get_next_byte) (void *),
       parse_pair_to_operator_command(pair, operator_to_append);
       append_to_list(operator_to_append, iterate_me);
       INCOMPLETE_COMMAND = 1;
+      PREV_WAS_CLOSE_PARENS=0;
     }
     else if (pair[0] == ';') {
       command_to_append = malloc(sizeof(struct command));
-      if (strlen(chunk) != 0) parse_chunk_to_command(chunk, command_to_append);
+      if (PREV_WAS_CLOSE_PARENS== 0) parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
       // printf("semicolon found after\n");
       // print_command(command_to_append);
@@ -578,6 +583,7 @@ make_command_stream (int (*get_next_byte) (void *),
       operator_to_append = malloc(sizeof(struct command));
       parse_pair_to_operator_command(pair, operator_to_append);
       append_to_list(operator_to_append, iterate_me);
+      PREV_WAS_CLOSE_PARENS=0;
     }
     else if (strcmp(pair,"\n\n") == 0 || pair[0] == EOF)
     {
@@ -590,7 +596,7 @@ make_command_stream (int (*get_next_byte) (void *),
       }
       else {
         command_to_append = malloc(sizeof(struct command));
-        if (strlen(chunk) != 0) {
+        if (PREV_WAS_CLOSE_PARENS==0) {
           parse_chunk_to_command(chunk, command_to_append);
           append_to_list(command_to_append, iterate_me);
         }
