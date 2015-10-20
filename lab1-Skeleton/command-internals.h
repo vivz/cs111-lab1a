@@ -8,6 +8,9 @@ enum command_type
     PIPE_COMMAND,        // A | B
     SIMPLE_COMMAND,      // a simple command
     SUBSHELL_COMMAND,    // ( A )
+    SUBSHELL_OPEN        // we have command_types corresponding to tokens and 
+                         // we need an open parens token (we will use subshell 
+                         // command as close parens)
   };
 
 // Data associated with a command.

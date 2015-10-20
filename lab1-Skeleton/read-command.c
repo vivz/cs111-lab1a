@@ -167,6 +167,12 @@ parse_pair_to_operator_command(char* pair, command_t operator_command) {
   else if (pair[0] == ';') {
     operator_command->type = SEQUENCE_COMMAND;
   }
+  else if (pair[0] == '(') {
+    operator_command->type = SUBSHELL_OPEN;
+  }
+  else if (pair[0] == ')') {
+    operator_command->type = SUBSHELL_COMMAND;
+  }
   else {
     printf("You shouldn't be here, something went wrong\n");
   }
@@ -209,7 +215,12 @@ void print_tree_list(command_stream* printme) {
       case SEQUENCE_COMMAND:
         string = ";";
         break;
-
+      case SUBSHELL_COMMAND:
+        string = ")";
+        break;
+      case SUBSHELL_OPEN:
+        string = "(";
+        break;
     }
     printf("node %d: type: %s\n", count++, string);
     curr = curr->next;
@@ -224,7 +235,7 @@ command_t build_command_tree(command_stream* iterate_me) {
   command_stack.head = NULL;
   command_stack.tail = NULL;
 
-  command_t popped_operator, right_child_command, left_child_command;
+  command_t popped_operator, doncare, right_child_command, left_child_command;
   /*
   1) If it's a simple command, push it onto the command stack
   2) If '(' push on to operator stack
@@ -239,7 +250,13 @@ command_t build_command_tree(command_stream* iterate_me) {
   */
 
   int top_command_type, current_type;
-  int operator_precedence[] = {1, 0, 1, 2};
+  int operator_precedence[] = {1, // AND
+                               0, // SEQ
+                               1, // OR
+                               2, // PIPE
+                               5, // SIMPLE
+                               -1, // SUBSHELL_COM
+                               -1}; // SUBSHELL OPE
 
   // printf("initialzing curr...\n");
   command_node* curr = iterate_me->head;
@@ -298,6 +315,41 @@ command_t build_command_tree(command_stream* iterate_me) {
           append_to_list(curr->command, &operator_stack);
         }
         break; //end of operator case
+      case SUBSHELL_COMMAND:
+      ///////////////////////////////////////
+        while (operator_stack.tail->command->type != SUBSHELL_OPEN){
+          printf("head of stack: %d\n", operator_stack.tail->command->type);
+          remove_last_node(&operator_stack, &popped_operator);
+          remove_last_node(&command_stack, &right_child_command);
+          remove_last_node(&command_stack, &left_child_command);
+          // print_command(left_child_command);
+          // print_command(right_child_command);
+
+          if (left_child_command->type == SIMPLE_COMMAND){
+            if (left_child_command->u.word[0] == '\0'){
+              error(1,0, "incomplete command");
+            }
+          }
+          if (right_child_command->type == SIMPLE_COMMAND){
+            if (right_child_command->u.word[0] == '\0'){
+              error(1,0, "incomplete command");
+            }
+          }
+
+          popped_operator->u.command[0] = left_child_command;
+          popped_operator->u.command[1] = right_child_command;
+          append_to_list(popped_operator, &command_stack);
+        }
+        remove_last_node(&command_stack, &popped_operator);
+        curr->command->u.subshell_command = popped_operator;
+        append_to_list(curr->command, &command_stack);
+        //pop the open subshell
+        remove_last_node(&operator_stack,&doncare);
+      ///////////////////////////////////////
+        break;
+      case SUBSHELL_OPEN:
+        append_to_list(curr->command, &operator_stack);
+        break;
     }
 
 
@@ -471,7 +523,7 @@ make_command_stream (int (*get_next_byte) (void *),
     if (strcmp(pair, "&&") == 0 || strcmp(pair, "||") == 0)  {
       //push to the stack 
       command_to_append = malloc(sizeof(struct command));
-      parse_chunk_to_command(chunk, command_to_append);
+      if (strlen(chunk) != 0) parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
       // printf("and or or found after\n");
       // print_command(command_to_append);
@@ -482,9 +534,29 @@ make_command_stream (int (*get_next_byte) (void *),
       INCOMPLETE_COMMAND = 1;
       i++;
     } 
+    else if (pair[0] == '(') {
+      chunk[0] = '\0';
+      operator_to_append = malloc(sizeof(struct command));
+      parse_pair_to_operator_command(pair, operator_to_append);
+      append_to_list(operator_to_append, iterate_me);
+    }
+
+    else if (pair[0] == ')') {
+      command_to_append = malloc(sizeof(struct command));
+      if (strlen(chunk) != 0) parse_chunk_to_command(chunk, command_to_append);
+      append_to_list(command_to_append, iterate_me);
+      // printf("and or or found after\n");
+      // print_command(command_to_append);
+      chunk[0] = '\0';
+      operator_to_append = malloc(sizeof(struct command));
+      parse_pair_to_operator_command(pair, operator_to_append);
+      append_to_list(operator_to_append, iterate_me);
+      printf("added close parens\n");
+    }
+
     else if (pair[0] == '|') {
       command_to_append = malloc(sizeof(struct command));
-      parse_chunk_to_command(chunk, command_to_append);
+      if (strlen(chunk) != 0) parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
       // printf("pipe found after\n");
       // print_command(command_to_append);
@@ -496,7 +568,7 @@ make_command_stream (int (*get_next_byte) (void *),
     }
     else if (pair[0] == ';') {
       command_to_append = malloc(sizeof(struct command));
-      parse_chunk_to_command(chunk, command_to_append);
+      if (strlen(chunk) != 0) parse_chunk_to_command(chunk, command_to_append);
       append_to_list(command_to_append, iterate_me);
       // printf("semicolon found after\n");
       // print_command(command_to_append);
@@ -512,15 +584,18 @@ make_command_stream (int (*get_next_byte) (void *),
       }
       else {
         command_to_append = malloc(sizeof(struct command));
-        parse_chunk_to_command(chunk, command_to_append);
-        append_to_list(command_to_append, iterate_me);
+        printf("chunk: %s\n", chunk);
+        if (strlen(chunk) != 0) {
+          parse_chunk_to_command(chunk, command_to_append);
+          append_to_list(command_to_append, iterate_me);
+        }
         // print_command(command_to_append);
         // printf("print our linked list of nodes\n");
-        // print_tree_list(iterate_me);
+        print_tree_list(iterate_me);
 
 
 
-        // printf("trying to build tree\n");
+        printf("trying to build tree\n");
 
         command_t insert_me = build_command_tree(iterate_me);
         // printf("built tree\n");

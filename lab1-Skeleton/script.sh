@@ -1,15 +1,22 @@
-sort < a | cat b - | tr A-Z a-z > c | cat2 more | less too ; more command
+true
 
-sort -k2 d - < a | uniq -c > e
+g++ -c foo.c
 
-diff a c > f
+: : :
 
-sort<a||boo
+cat < /etc/passwd | tr a-z A-Z | sort -u || echo sort failed!
 
-a<b>c|d<e>f|g<h>i
+a b<c > d
+
+cat < /etc/passwd | tr a-z A-Z | sort -u > out || echo sort failed!
 
 a&&b||
  c &&
   d | e && f|
 
-  
+g<h
+
+# This is a weird example: nobody would ever want to run this.
+a<b>c|d<e>f|g<h>i
+
+A || (B | C && s)
