@@ -551,7 +551,6 @@ make_command_stream (int (*get_next_byte) (void *),
       operator_to_append = malloc(sizeof(struct command));
       parse_pair_to_operator_command(pair, operator_to_append);
       append_to_list(operator_to_append, iterate_me);
-      printf("added close parens\n");
     }
 
     else if (pair[0] == '|') {
@@ -584,18 +583,12 @@ make_command_stream (int (*get_next_byte) (void *),
       }
       else {
         command_to_append = malloc(sizeof(struct command));
-        printf("chunk: %s\n", chunk);
         if (strlen(chunk) != 0) {
           parse_chunk_to_command(chunk, command_to_append);
           append_to_list(command_to_append, iterate_me);
         }
         // print_command(command_to_append);
         // printf("print our linked list of nodes\n");
-        print_tree_list(iterate_me);
-
-
-
-        printf("trying to build tree\n");
 
         command_t insert_me = build_command_tree(iterate_me);
         // printf("built tree\n");
