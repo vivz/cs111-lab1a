@@ -24,3 +24,16 @@ void remove_last_node(command_stream*, command_t*);
 // int is_empty(command_stream* list) { return list->head == NULL; };
 
 void print_list(command_stream*);
+
+typedef struct char_stack {
+	char stack[1024];
+	int size;
+} char_stack;
+
+void push_char_stack(char, char_stack*);
+
+void pop_char_stack(char_stack*);
+
+char top_char_stack(char_stack*);
+
+int char_stack_empty(char_stack*);

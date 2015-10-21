@@ -23,6 +23,8 @@ void append_to_list(command_t insert_me, command_stream* list) {
 	}
 }
 
+
+
 void remove_last_node(command_stream* list, command_t* popped){
 	if (list->tail!= NULL){
 		*popped = list->tail->command;
@@ -63,4 +65,29 @@ void print_list(command_stream* list) {
 		print_command(curr->command);
 		curr = curr->next;
 	}
+}
+
+void push_char_stack(char c, char_stack* c_stack) {
+	c_stack->stack[c_stack->size++] = c;
+	c_stack->stack[c_stack->size] = '\0';
+}
+
+void pop_char_stack(char_stack* c_stack) {
+	if (c_stack->size > 0) {
+		c_stack->size--;
+	} else {
+		error(1,0,"popping an empty stack");
+	}
+}
+
+char top_char_stack(char_stack* c_stack) {
+	if (c_stack->size > 0) {
+		return c_stack->stack[c_stack->size - 1];
+	} else {
+		error(1,0,"trying to get top of empty stack");
+	}
+}
+
+int char_stack_empty(char_stack* c_stack) {
+	return c_stack->size == 0;
 }
