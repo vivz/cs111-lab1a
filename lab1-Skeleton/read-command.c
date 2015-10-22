@@ -450,8 +450,10 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
     if (strcmp(pair, "&&") == 0 || strcmp(pair, "||") == 0)  {
       //push to the stack 
       command_to_append = malloc(sizeof(struct command));
-      if (PREV_WAS_CLOSE_PARENS == 0) parse_chunk_to_command(chunk, command_to_append);
-      append_to_list(command_to_append, iterate_me);
+      if (PREV_WAS_CLOSE_PARENS == 0) {
+        parse_chunk_to_command(chunk, command_to_append);
+        append_to_list(command_to_append, iterate_me);
+      }
       // printf("and or or found after\n");
       // print_command(command_to_append);
       chunk[0] = '\0';
@@ -474,6 +476,7 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
       command_to_append->u.subshell_command = temp_stream->tail->command;
       i = i + 1 + ctr_len;
       append_to_list(command_to_append, iterate_me);
+      PREV_WAS_CLOSE_PARENS = 1;
       // chunk[0] = '\0';
       // operator_to_append = malloc(sizeof(struct command));
       // parse_pair_to_operator_command(pair, operator_to_append);
@@ -498,9 +501,10 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
 
     else if (pair[0] == '|') {
       command_to_append = malloc(sizeof(struct command));
-      if (PREV_WAS_CLOSE_PARENS== 0) 
-          parse_chunk_to_command(chunk, command_to_append);
-      append_to_list(command_to_append, iterate_me);
+      if (PREV_WAS_CLOSE_PARENS == 0) {
+        parse_chunk_to_command(chunk, command_to_append);
+        append_to_list(command_to_append, iterate_me);        
+      }
       // printf("pipe found after\n");
       // print_command(command_to_append);
       chunk[0] = '\0';
@@ -533,7 +537,9 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
       }
       else {
         command_to_append = malloc(sizeof(struct command));
-        if (PREV_WAS_CLOSE_PARENS==0) {
+        printf("node list pre final add\n");
+        print_tree_list(iterate_me);
+        if (PREV_WAS_CLOSE_PARENS == 0) {
           parse_chunk_to_command(chunk, command_to_append);
           append_to_list(command_to_append, iterate_me);
         }
