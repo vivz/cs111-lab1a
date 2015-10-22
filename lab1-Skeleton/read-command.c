@@ -419,9 +419,87 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
       command_to_append->u.subshell_command = temp_stream->tail->command;
       i = i + 1 + ctr_len;
 
-      // set flag
+      char subshell_input[200], subshell_output[200];
+      enum subshell_flag{
+            DEFAULT,
+            next_in,
+            next_out,
+      };
+      int subshell_flag = DEFAULT;
+      int input_word_len = 0, output_word_len = 0;
+      for(;buffer[i]!=EOF;i++)///starting i is 
+      {
+         //see >
+         if (buffer[i]=='>')
+         {
+              if (subshell_flag == next_in) 
+              {
+                  if(subshell_input[0]=='\0')
+                    error(1,0,"NOOO");
+                  else {
+                    command_to_append->input = (char*) malloc(256);
+                    strcpy(command_to_append->input, subshell_input);
+                  }
+              }
+              subshell_flag=next_out;
+         }
+         //see <
+         else if(buffer[i] == '<')
+         {
+              if (subshell_flag == next_out) 
+              {
+                  if(subshell_output[0]=='\0')
+                    error(1,0,"NOOO");
+                  else {
+                    command_to_append->output = (char*) malloc(256);
+                    strcpy(command_to_append->output, subshell_output);
+                  }
+              }
+              subshell_flag=next_in;
+         }
+         //see other operator
+         else if (buffer[i]=='&'||buffer[i]=='|'||buffer[i]==';'||buffer[i]=='\n')
+         {
+              if (subshell_flag == next_out) 
+              {
+                  if(subshell_output[0]=='\0')
+                    error(1,0,"NOOO");
+                  else {
+                    command_to_append->output = (char*) malloc(256);
+                    strcpy(command_to_append->output, subshell_output);
+                  }
+              }
 
-
+              else if (subshell_flag == next_in) 
+              {
+                  if(subshell_input[0]=='\0')
+                    error(1,0,"NOOO");
+                  else {
+                    command_to_append->input = (char*) malloc(256);
+                    strcpy(command_to_append->input, subshell_input);
+                  }
+              }
+              i--;
+              break;
+         }
+         //see space
+         else if (buffer[i]==' ') 
+              ;
+         //see regular chars
+         else
+         {
+              if(subshell_flag == next_in)
+              {
+                subshell_input[input_word_len++] = buffer[i];
+                subshell_input[input_word_len] = '\0';
+              }
+              else if (subshell_flag == next_out)
+              {
+                subshell_output[output_word_len++] = buffer[i];
+                subshell_output[output_word_len] = '\0';
+              }
+         }
+      }
 
       append_to_list(command_to_append, iterate_me);
       PREV_WAS_CLOSE_PARENS = 1;
