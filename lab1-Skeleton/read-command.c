@@ -423,6 +423,7 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
     else if (pair[0] == '(') {
       // push_char_stack('(', parens_stack);
       // printf("pre get chunk\n");
+      //
       get_string_up_to_matching_parens((buffer+i),chunk);
       // printf("chunk to recurse: %s\n", chunk);
       int ctr_len = strlen(chunk);
@@ -446,7 +447,7 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
       };
       int subshell_flag = DEFAULT;
       int input_word_len = 0, output_word_len = 0;
-      for(;buffer[i]!=EOF && buffer[i] != '\0';i++)///starting i is 
+      for(;buffer[i]!=EOF;i++)///starting i is 
       {
          //see >
          if (buffer[i]=='>')
@@ -477,7 +478,7 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
               subshell_flag=next_in;
          }
          //see other operator
-         else if (buffer[i]=='&'||buffer[i]=='|'||buffer[i]==';'||buffer[i]=='\n')
+         else if (buffer[i]=='&'||buffer[i]=='|'||buffer[i]==';'||buffer[i]=='\n' ||buffer[i]=='\0')
          {
               if (subshell_flag == next_out) 
               {
@@ -498,7 +499,8 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
                     strcpy(command_to_append->input, subshell_input);
                   }
               }
-              i--;
+              if(buffer[i]!='\0')
+                i--;
               break;
          }
          //see space
