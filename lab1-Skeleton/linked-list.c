@@ -86,6 +86,7 @@ char top_char_stack(char_stack* c_stack) {
 	} else {
 		error(1,0,"trying to get top of empty stack");
 	}
+	return 0;
 }
 
 int char_stack_empty(char_stack* c_stack) {
