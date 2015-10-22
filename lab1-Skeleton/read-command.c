@@ -356,41 +356,6 @@ command_t build_command_tree(command_stream* iterate_me) {
           append_to_list(curr->command, &operator_stack);
         }
         break; //end of operator case
-      // case SUBSHELL_COMMAND:
-      // ///////////////////////////////////////
-      //   while (operator_stack.tail->command->type != SUBSHELL_OPEN){
-      //     printf("head of stack: %d\n", operator_stack.tail->command->type);
-      //     remove_last_node(&operator_stack, &popped_operator);
-      //     remove_last_node(&command_stack, &right_child_command);
-      //     remove_last_node(&command_stack, &left_child_command);
-      //     // print_command(left_child_command);
-      //     // print_command(right_child_command);
-
-      //     if (left_child_command->type == SIMPLE_COMMAND){
-      //       if (left_child_command->u.word[0] == '\0'){
-      //         error(1,0, "incomplete command");
-      //       }
-      //     }
-      //     if (right_child_command->type == SIMPLE_COMMAND){
-      //       if (right_child_command->u.word[0] == '\0'){
-      //         error(1,0, "incomplete command");
-      //       }
-      //     }
-
-      //     popped_operator->u.command[0] = left_child_command;
-      //     popped_operator->u.command[1] = right_child_command;
-      //     append_to_list(popped_operator, &command_stack);
-      //   }
-      //   remove_last_node(&command_stack, &popped_operator);
-      //   curr->command->u.subshell_command = popped_operator;
-      //   append_to_list(curr->command, &command_stack);
-      //   //pop the open subshell
-      //   remove_last_node(&operator_stack,&doncare);
-      // ///////////////////////////////////////
-      //   break;
-      // case SUBSHELL_OPEN:
-      //   append_to_list(curr->command, &operator_stack);
-      //   break;
     }
 
 
@@ -475,29 +440,14 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
       command_to_append->type = SUBSHELL_COMMAND;
       command_to_append->u.subshell_command = temp_stream->tail->command;
       i = i + 1 + ctr_len;
+
+      // set flag
+
+
+
       append_to_list(command_to_append, iterate_me);
       PREV_WAS_CLOSE_PARENS = 1;
-      // chunk[0] = '\0';
-      // operator_to_append = malloc(sizeof(struct command));
-      // parse_pair_to_operator_command(pair, operator_to_append);
-      // append_to_list(operator_to_append, iterate_me);
-      // num_open_parens++;
     }
-
-    // else if (pair[0] == ')') {
-    //   command_to_append = malloc(sizeof(struct command));
-    //   if (PREV_WAS_CLOSE_PARENS == 0)
-    //       parse_chunk_to_command(chunk, command_to_append);
-    //   append_to_list(command_to_append, iterate_me);
-    //   // printf("and or or found after\n");
-    //   // print_command(command_to_append);
-    //   chunk[0] = '\0';
-    //   operator_to_append = malloc(sizeof(struct command));
-    //   parse_pair_to_operator_command(pair, operator_to_append);
-    //   append_to_list(operator_to_append, iterate_me);
-    //   num_close_parens++;
-    //   PREV_WAS_CLOSE_PARENS = 1;
-    // }
 
     else if (pair[0] == '|') {
       command_to_append = malloc(sizeof(struct command));
@@ -601,106 +551,6 @@ make_command_stream (int (*get_next_byte) (void *),
      add auxiliary functions and otherwise modify the source code.
      You can also use external functions defined in the GNU C Library.
   */
-
-  // printf("make_command_stream\n");
-
-  /*
-  char* test_string = "sort   a < b  > c";
-  // should output "sort a<b>c"
-  command_t test_command = malloc(sizeof(struct command));
-  printf("pre parse\n");
-  parse_chunk_to_command(test_string, test_command);
-  printf("pre print\n");
-  print_command(test_command);
-  printf("post print command\n");
-  */
-
-  /*
-  command_stream test_list;
-  command_t popped_command = malloc(sizeof(struct command));
-  test_list.head = NULL;
-  test_list.tail = NULL;
-
-  command_t new_command0 = malloc(sizeof(struct command));
-  new_command0->type = SIMPLE_COMMAND;
-  new_command0->status = -1;
-  new_command0->u.word = malloc(3 * sizeof(char*));
-  new_command0->u.word[0] = "echo";
-  new_command0->u.word[1] = "a";
-  new_command0->u.word[2] = NULL;
-  new_command0->output = "out";
-  printf("append 0\n");
-  append_to_list(new_command0, &test_list);
-
-  command_t new_command1 = malloc(sizeof(struct command));
-  new_command1->type = SIMPLE_COMMAND;
-  new_command1->status = -1;
-  new_command1->u.word = malloc(3 * sizeof(char*));
-  new_command1->u.word[0] = "cat";
-  new_command1->u.word[1] = "b";
-  new_command1->u.word[2] = NULL;
-  printf("append 1 newcommand\n");
-  print_command(new_command1);
-  append_to_list(new_command1, &test_list);
-
-  command_t new_command2 = malloc(sizeof(struct command));
-  new_command2->type = OR_COMMAND;
-  new_command2->status = -1;
-  new_command2->u.command[0] = new_command0;
-  new_command2->u.command[1] = new_command1;
-  printf("append 2\n");
-  append_to_list(new_command2, &test_list);
-
-  printf("testing list after appends\n");
-  print_tree_list(&test_list);
-
-  printf("removing node 1...\n");
-  remove_last_node(&test_list, &popped_command);
-  printf("popped command_type: %d\n", popped_command->type);
-  printf("print removed node\n");
-  print_command(popped_command);
-  
-  printf("removing node 2...\n");
-  remove_last_node(&test_list, &popped_command);
-  printf("popped command_type: %d\n", popped_command->type);
-  printf("print removed node\n");
-  print_command(popped_command);
-  printf("testing list after 2 removes\n");
-  print_tree_list(&test_list);
-  printf("removing node 3...\n");
-  remove_last_node(&test_list, &popped_command);
-  
-  if(test_list.head==NULL)
-  printf("yayy\n");  
-  else
-  printf("nooo\n");
-
-
-  command_stream command_stream_test;
-  command_stream_test.head = NULL;
-  command_stream_test.tail = NULL;
-
-  command_t new_command3 = malloc(sizeof(struct command));
-  new_command3->type = SUBSHELL_COMMAND;
-  new_command3->status = -1;
-  new_command3->u.subshell_command = new_command0;
-
-
-  */
-  char nested[1024];
-  get_string_up_to_matching_parens("(hello (world) (this (is me))) shoot", nested);
-  printf("nested: %s\n", nested);
-  printf("length of nested: %d\n", strlen(nested));
-  get_string_up_to_matching_parens("(joe) schmoe", nested);
-  printf("nested: %s\n", nested);
-  printf("length of nested: %d\n", strlen(nested));
-  get_string_up_to_matching_parens("() schmoe", nested);
-  printf("nested: %s\n", nested);
-  printf("length of nested: %d\n", strlen(nested));
-  get_string_up_to_matching_parens("(B | C && s) > a", nested);
-  printf("nested: %s\n", nested);
-  printf("length of nested: %d\n", strlen(nested));
-
 
   char c = get_next_byte(get_next_byte_argument);
   //printf("%c",c); 
