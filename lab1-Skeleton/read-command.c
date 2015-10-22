@@ -67,28 +67,6 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
     //   // num_parens++;
     // }
     switch(chunk[i]) {
-      // case '(': 
-      //   printf("chunk to recurse: %s\n", chunk_to_recurse);
-      //   int ctr_len = strlen(chunk_to_recurse);
-      //   command_t inner_command = malloc(sizeof(struct command));
-      //   command_stream_t temp_stream = build_command_stream_from_buffer(chunk_to_recurse, ctr_len);
-      //   printf("1\n");
-      //   temp_stream->head;
-      //   printf("2\n");
-
-      //   inner_command = temp_stream->tail->command;
-      //   simple_command->type = SUBSHELL_COMMAND;
-      //   printf("3\n");
-      //   simple_command->u.subshell_command = inner_command;
-      //   printf("4\n");
-      //   // advance i for length of stuff inside parens, plus closing paren
-      //   // i++ in for loop advances past open paren
-      //   i = i + strlen(chunk_to_recurse) + 1;
-      //   printf("found inner chunk: %s\n", chunk_to_recurse);
-      //   printf("am i here\n");
-      //   print_command(simple_command);
-      //   break;
-
       case '<':
         // signals end of word
         if (word_to_store[0] == '\0') {
