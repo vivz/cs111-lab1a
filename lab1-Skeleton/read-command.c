@@ -32,7 +32,8 @@ void get_string_up_to_matching_parens(char* const string, char* matched) {
   char_stack* c_stack = malloc(sizeof(struct char_stack));
   push_char_stack('(', c_stack);
 
-  while (!char_stack_empty(c_stack)) {
+  while (!char_stack_empty(c_stack) && string[i] != EOF && string[i] != '\0') {
+    // printf("%c", string[i]);
     if (string[i] == '(') {
       push_char_stack('(', c_stack);
     }
@@ -41,6 +42,10 @@ void get_string_up_to_matching_parens(char* const string, char* matched) {
     }
     matched[i-1] = string[i];
     i++;
+  }
+
+  if (!char_stack_empty(c_stack)) {
+    error(1,0,"no matching close parentheses found");
   }
   matched[i-2] = '\0';
 }
@@ -376,7 +381,7 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
   // is command complete
   // i.e. did we just see an AND, OR, or PIPE operator
 
-  printf("buffer to build from: %s", buffer);
+  // printf("buffer to build from: %s", buffer);
   int INCOMPLETE_COMMAND = 0;
   int PREV_WAS_CLOSE_PARENS = 0;
   command_stream* command_list = malloc(sizeof(struct command_stream));
@@ -385,6 +390,9 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
   iterate_me->tail = NULL;
   command_t command_to_append;
   command_t operator_to_append;
+
+  char_stack* parens_stack;
+
   for (i = 0; i < len; i++) {
     pair[0] = buffer[i];
     pair[1] = buffer[i+1];
@@ -408,12 +416,13 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
       i++;
     } 
     else if (pair[0] == '(') {
+      push_char_stack('(', parens_stack);
       get_string_up_to_matching_parens((buffer+i),chunk);
-      printf("chunk to recurse: %s\n", chunk);
+      // printf("chunk to recurse: %s\n", chunk);
       int ctr_len = strlen(chunk);
       command_stream_t temp_stream = build_command_stream_from_buffer(chunk, ctr_len+1);
 
-      printf("does it get built?\n");
+      // printf("does it get built?\n");
       command_to_append = malloc(sizeof(struct command));
       command_to_append->type = SUBSHELL_COMMAND;
       command_to_append->u.subshell_command = temp_stream->tail->command;
@@ -504,7 +513,9 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
       append_to_list(command_to_append, iterate_me);
       PREV_WAS_CLOSE_PARENS = 1;
     }
-
+    else if (pair[0] == ')') {
+      pop_char_stack(parens_stack);
+    }
     else if (pair[0] == '|') {
       command_to_append = malloc(sizeof(struct command));
       if (PREV_WAS_CLOSE_PARENS == 0) {
@@ -534,7 +545,6 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
     }
     else if (strcmp(pair,"\n\n") == 0 || pair[0] == EOF || pair[0] == '\0')
     {
-
       if (num_close_parens != num_open_parens) {
         error(1,0,"mismatched parens");
       }
@@ -543,19 +553,19 @@ command_stream_t build_command_stream_from_buffer(char* buffer, int len) {
       }
       else {
         command_to_append = malloc(sizeof(struct command));
-        printf("node list pre final add\n");
-        print_tree_list(iterate_me);
+        // printf("node list pre final add\n");
+        // print_tree_list(iterate_me);
         if (PREV_WAS_CLOSE_PARENS == 0) {
           parse_chunk_to_command(chunk, command_to_append);
           append_to_list(command_to_append, iterate_me);
         }
         // print_command(command_to_append);
-        printf("print our linked list of nodes\n");
-        print_tree_list(iterate_me);
+        // printf("print our linked list of nodes\n");
+        // print_tree_list(iterate_me);
         command_t insert_me = build_command_tree(iterate_me);
 
         // printf("built tree\n");
-        print_command(insert_me);
+        // print_command(insert_me);
         append_to_list(insert_me, command_list);
         iterate_me->head = NULL;
         iterate_me->tail = NULL;

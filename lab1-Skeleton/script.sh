@@ -23,4 +23,4 @@ b | C && s > a
 
 (x | y && sz || vz) | harrison
 
-(x | y && sz || vz) < ko | harrison > ta
+(( a)
