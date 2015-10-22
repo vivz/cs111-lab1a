@@ -21,6 +21,6 @@ a<b>c|d<e>f|g<h>i
 
 b | C && s > a
 
-(x | y && sz || vz) | harrison
+ab && dc
 
-(( a)
+(x | (sz && vz) > a < b ) && c
