@@ -1,1 +1,1 @@
-(x| ((sz||c)<d && vz))&&(a) 
+(echo haha) > temp.txt

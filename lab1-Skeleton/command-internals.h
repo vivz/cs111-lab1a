@@ -1,4 +1,5 @@
 // UCLA CS 111 Lab 1 command internals
+#include <sys/types.h>
 
 enum command_type
   {
