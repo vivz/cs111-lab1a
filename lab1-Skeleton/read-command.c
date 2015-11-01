@@ -459,6 +459,7 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
                   else {
                     command_to_append->input = (char*) malloc(256);
                     strcpy(command_to_append->input, subshell_input);
+                    subshell_flag=DEFAULT;
                   }
               }
               subshell_flag=next_out;
@@ -473,6 +474,7 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
                   else {
                     command_to_append->output = (char*) malloc(256);
                     strcpy(command_to_append->output, subshell_output);
+                    subshell_flag=DEFAULT;
                   }
               }
               subshell_flag=next_in;
@@ -487,6 +489,7 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
                   else {
                     command_to_append->output = (char*) malloc(256);
                     strcpy(command_to_append->output, subshell_output);
+                    subshell_flag=DEFAULT;
                   }
               }
 
@@ -497,6 +500,7 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
                   else {
                     command_to_append->input = (char*) malloc(256);
                     strcpy(command_to_append->input, subshell_input);
+                    subshell_flag=DEFAULT;
                   }
               }
               if(buffer[i]!='\0')
@@ -521,6 +525,29 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
               }
          }
       }
+      if(subshell_flag == next_in)
+      {
+          if(subshell_input[0]=='\0')
+              error(1,0,"Saw a input sign but no input");
+          else {
+                    command_to_append->input = (char*) malloc(256);
+                    strcpy(command_to_append->input, subshell_input);
+                }
+      }
+      else if(subshell_flag==next_out)
+      {
+           if (subshell_flag == next_out) 
+              {
+                  if(subshell_output[0]=='\0')
+                    error(1,0,"Saw an output sign but no output");
+                  else {
+                    command_to_append->output = (char*) malloc(256);
+                    strcpy(command_to_append->output, subshell_output);
+                    subshell_flag=DEFAULT;
+                  }
+              }
+      }
+
 
       // printf("post input output check\n");
       append_to_list(command_to_append, iterate_me);

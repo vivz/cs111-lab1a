@@ -38,7 +38,7 @@ int handle_io(command_t c) {
   //handles output
   if (c->output != NULL) {
     output_redir = open(c->output, O_CREAT|O_WRONLY|O_TRUNC, 0644);
-    printf("output: %s\n", c->output);
+    // printf("output: %s\n", c->output);
     if (output_redir < 0) 
         // error(1,0,"don't know where to output");
         return -1;
@@ -125,6 +125,7 @@ void execute_or_command(command_t or_command){
 
 void execute_and_command(command_t and_command) {
   execute_command(and_command->u.command[0], 0);
+  // printf("first status: %d\n", and_command->u.command[0]->status);
   if (and_command->u.command[0]->status == 0) {
     execute_command(and_command->u.command[1], 0);
     and_command->status = and_command->u.command[1]->status;
@@ -136,7 +137,7 @@ void execute_and_command(command_t and_command) {
 void execute_sub_command(command_t sub_command){
   int io_status = 0;
   
-  printf("pre io %s\n", sub_command->output);
+  // printf("pre io %s\n", sub_command->output);
   io_status=handle_io(sub_command);
   
   if(io_status!=0)
@@ -187,7 +188,7 @@ void execute_pipe_command(command_t pipe_command){
       execute_command(pipe_command->u.command[0], 0);
       _exit(pipe_command->u.command[0]->status);
     }
-    if(other_child > 0) //parent of the second child
+    else if(other_child > 0) //parent of the second child
     {
       returned = waitpid (-1, &exit_status,0);
       close(io[0]);
@@ -195,7 +196,7 @@ void execute_pipe_command(command_t pipe_command){
       if(other_child == returned)
       {
         waitpid(child_pid, &exit_status,0);
-        pipe_command->status=WEXITSTATUS(&exit_status);
+        pipe_command->status=WEXITSTATUS(exit_status);
       }
       if(child_pid == returned)
       {

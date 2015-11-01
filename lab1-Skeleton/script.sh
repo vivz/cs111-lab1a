@@ -1,1 +1,1 @@
-(echo haha) > temp.txt
+ls | wc && echo hello
