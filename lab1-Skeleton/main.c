@@ -4,11 +4,18 @@
 #include <error.h>
 #include <getopt.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "linked-list.h"
+#include "command-internals.h"
 #include "command.h"
 
 static char const *program_name;
 static char const *script_name;
+
+
+
 
 static void
 usage (void)
@@ -54,6 +61,39 @@ main (int argc, char **argv)
 
   command_t last_command = NULL;
   command_t command;
+  int read_array_len = 0;
+
+  while (command_stream->current != NULL) {
+    command_stream->current->read_list = malloc(sizeof(char*) * 32);
+    command_stream->current->write_list = malloc(sizeof(char*) * 32);
+    if(command_stream->current->command->input != NULL)
+    {
+        command_stream->current->read_list[0] = malloc(sizeof(char) * 100);
+        read_array_len++;
+        strcpy(command_stream->current->read_list[0], command_stream->current->command->input);
+    }
+    if(command_stream->current->command->output != NULL)
+    {
+        command_stream->current->write_list[0] = malloc(sizeof(char) * 100);
+        strcpy(command_stream->current->write_list[0], command_stream->current->command->output);
+    }
+    // index starts at 1 so we don't include the command name
+    int iterator = 1;
+    while(command_stream->current->command->u.word[iterator]!=NULL)
+    {
+      command_stream->current->read_list[read_array_len]=malloc(sizeof(char*) * 40);
+      strcpy(command_stream->current->read_list[read_array_len],command_stream->current->command->u.word[iterator]);
+      iterator++;
+      read_array_len++;
+    }
+
+    printf("the readlist is %s\n", command_stream->current->read_list[0]);
+    printf("the writelist is %s\n", command_stream->current->write_list[0]);
+    command_stream->current = command_stream->current->next;
+  }
+
+  command_stream->current = command_stream->head;
+
   while ((command = read_command_stream (command_stream)))
     {
       if (print_tree)

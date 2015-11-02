@@ -651,7 +651,6 @@ void build_command_stream_from_buffer(command_stream* command_list, char* buffer
       INCOMPLETE_COMMAND = 0;
     }
   }
-
   command_list->current = command_list->head;
 }
 

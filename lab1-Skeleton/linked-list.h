@@ -9,6 +9,8 @@
 typedef struct command_node {
 	struct command_node *next;
 	command_t command;
+    char** read_list;
+    char** write_list;
 } command_node;
 
 typedef struct command_stream {
