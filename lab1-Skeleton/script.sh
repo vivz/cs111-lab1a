@@ -1,3 +1,3 @@
-cat script.sh > foo.txt < bar.txt
+cat file.txt < out.txt
 
-echo a
+echo boo > out.txt

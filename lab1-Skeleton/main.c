@@ -14,8 +14,20 @@
 static char const *program_name;
 static char const *script_name;
 
-
-
+int dependency_exists(char** list1, char** list2) {
+  while (list1[0] != NULL) {
+    printf("list item: %s\n", *list1);
+    while (list2[0] != NULL) {
+      // two words are the same
+      if (strcmp(list1[0], list2[0]) == 0) {
+        return 1;
+      }   
+      list2++;
+    }
+    list1++;
+  }
+  return 0;
+}
 
 static void
 usage (void)
@@ -61,6 +73,8 @@ main (int argc, char **argv)
 
   command_t last_command = NULL;
   command_t command;
+  command_node* inner_current;
+
   int read_array_len = 0;
 
   while (command_stream->current != NULL) {
@@ -87,8 +101,25 @@ main (int argc, char **argv)
       read_array_len++;
     }
 
+    inner_current = command_stream->head;
+    while (inner_current != command_stream->current) {
+      if (dependency_exists(inner_current->read_list, command_stream->current->write_list)){
+        printf("RAW data race\n");
+      }
+      if (dependency_exists(inner_current->write_list, command_stream->current->write_list)) {
+        printf("WAW data race\n");
+      }
+      if (dependency_exists(inner_current->write_list, command_stream->current->read_list)) {
+        printf("WAR data race\n");
+      }
+
+      inner_current = inner_current->next;
+    }
+
+
     printf("the readlist is %s\n", command_stream->current->read_list[0]);
     printf("the writelist is %s\n", command_stream->current->write_list[0]);
+    printf("dependency: %d\n", dependency_exists(command_stream->current->read_list, command_stream->current->write_list));
     command_stream->current = command_stream->current->next;
   }
 
