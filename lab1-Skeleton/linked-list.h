@@ -11,6 +11,10 @@ typedef struct command_node {
 	command_t command;
     char** read_list;
     char** write_list;
+
+    struct command_node** dependencies;
+    int num_dependencies; 
+    
 } command_node;
 
 typedef struct command_stream {

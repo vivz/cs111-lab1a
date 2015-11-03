@@ -80,6 +80,8 @@ main (int argc, char **argv)
   while (command_stream->current != NULL) {
     command_stream->current->read_list = malloc(sizeof(char*) * 32);
     command_stream->current->write_list = malloc(sizeof(char*) * 32);
+    command_stream->current->dependencies = malloc(sizeof(struct command_node*));
+    command_stream->current->num_dependencies = 0;
     if(command_stream->current->command->input != NULL)
     {
         command_stream->current->read_list[0] = malloc(sizeof(char) * 100);
@@ -103,16 +105,15 @@ main (int argc, char **argv)
 
     inner_current = command_stream->head;
     while (inner_current != command_stream->current) {
-      if (dependency_exists(inner_current->read_list, command_stream->current->write_list)){
-        printf("RAW data race\n");
-      }
-      if (dependency_exists(inner_current->write_list, command_stream->current->write_list)) {
-        printf("WAW data race\n");
-      }
-      if (dependency_exists(inner_current->write_list, command_stream->current->read_list)) {
-        printf("WAR data race\n");
-      }
+      if ((dependency_exists(inner_current->read_list, command_stream->current->write_list))  || // "possible RAW data race"
+          (dependency_exists(inner_current->write_list, command_stream->current->write_list)) || // "possible WAR data race"
+          (dependency_exists(inner_current->write_list, command_stream->current->read_list)))    // "possible WAW data race"
+        {
+          /*
+            add pointer to inner_current in current's dependencies
+          */
 
+        }
       inner_current = inner_current->next;
     }
 
