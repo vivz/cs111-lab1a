@@ -77,54 +77,88 @@ main (int argc, char **argv)
 
   int read_array_len = 0;
 
-  while (command_stream->current != NULL) {
-    command_stream->current->read_list = malloc(sizeof(char*) * 32);
-    command_stream->current->write_list = malloc(sizeof(char*) * 32);
-    command_stream->current->dependencies = malloc(sizeof(struct command_node*));
-    command_stream->current->num_dependencies = 0;
-    if(command_stream->current->command->input != NULL)
-    {
-        command_stream->current->read_list[0] = malloc(sizeof(char) * 100);
+  if (print_tree)
+  {
+    while ((command = read_command_stream (command_stream))) {
+      printf ("# %d\n", command_number++);
+      print_command (command);
+    } 
+  } 
+  else {
+
+    // iterate through command stream to build dependency list, information is stored in command nodes
+    while (command_stream->current != NULL) {
+      command_stream->current->read_list = malloc(sizeof(char*) * 32);
+      command_stream->current->write_list = malloc(sizeof(char*) * 32);
+      command_stream->current->dependencies = malloc(sizeof(struct command_node*)*20);
+      command_stream->current->num_dependencies = 0;
+      if(command_stream->current->command->input != NULL)
+      {
+          command_stream->current->read_list[0] = malloc(sizeof(char) * 100);
+          read_array_len++;
+          strcpy(command_stream->current->read_list[0], command_stream->current->command->input);
+      }
+      if(command_stream->current->command->output != NULL)
+      {
+          command_stream->current->write_list[0] = malloc(sizeof(char) * 100);
+          strcpy(command_stream->current->write_list[0], command_stream->current->command->output);
+      }
+      // index starts at 1 so we don't include the command name
+      int iterator = 1;
+      while(command_stream->current->command->u.word[iterator]!=NULL)
+      {
+        command_stream->current->read_list[read_array_len]=malloc(sizeof(char*) * 40);
+        strcpy(command_stream->current->read_list[read_array_len],command_stream->current->command->u.word[iterator]);
+        iterator++;
         read_array_len++;
-        strcpy(command_stream->current->read_list[0], command_stream->current->command->input);
-    }
-    if(command_stream->current->command->output != NULL)
-    {
-        command_stream->current->write_list[0] = malloc(sizeof(char) * 100);
-        strcpy(command_stream->current->write_list[0], command_stream->current->command->output);
-    }
-    // index starts at 1 so we don't include the command name
-    int iterator = 1;
-    while(command_stream->current->command->u.word[iterator]!=NULL)
-    {
-      command_stream->current->read_list[read_array_len]=malloc(sizeof(char*) * 40);
-      strcpy(command_stream->current->read_list[read_array_len],command_stream->current->command->u.word[iterator]);
-      iterator++;
-      read_array_len++;
-    }
+      }
 
-    inner_current = command_stream->head;
-    while (inner_current != command_stream->current) {
-      if ((dependency_exists(inner_current->read_list, command_stream->current->write_list))  || // "possible RAW data race"
-          (dependency_exists(inner_current->write_list, command_stream->current->write_list)) || // "possible WAR data race"
-          (dependency_exists(inner_current->write_list, command_stream->current->read_list)))    // "possible WAW data race"
-        {
-          /*
-            add pointer to inner_current in current's dependencies
-          */
-
-        }
-      inner_current = inner_current->next;
-    }
+      inner_current = command_stream->head;
+      while (inner_current != command_stream->current) {
+        if ((dependency_exists(inner_current->read_list, command_stream->current->write_list))  || // "possible RAW data race"
+            (dependency_exists(inner_current->write_list, command_stream->current->write_list)) || // "possible WAR data race"
+            (dependency_exists(inner_current->write_list, command_stream->current->read_list)))    // "possible WAW data race"
+          {
+            // add pointer to inner_current in current's dependencies
+            command_stream->current->dependencies[command_stream->current->num_dependencies++] = inner_current;
+            printf("Yes\n");
+          }
+        inner_current = inner_current->next;
+      }
 
 
-    printf("the readlist is %s\n", command_stream->current->read_list[0]);
-    printf("the writelist is %s\n", command_stream->current->write_list[0]);
-    printf("dependency: %d\n", dependency_exists(command_stream->current->read_list, command_stream->current->write_list));
-    command_stream->current = command_stream->current->next;
+      printf("the readlist is %s\n", command_stream->current->read_list[0]);
+      printf("the writelist is %s\n", command_stream->current->write_list[0]);
+      printf("dependency: %d\n", dependency_exists(command_stream->current->read_list, command_stream->current->write_list));
+      command_stream->current = command_stream->current->next;
+    }
   }
 
   command_stream->current = command_stream->head;
+
+  // loop through
+  while (command_stream->current != NULL) {
+    pid_t child_pid = fork();
+    if(child_pid == 0) //child
+    {
+      int ind = 0;
+      //check dependency
+      for(ind; ind<command_stream->current->num_dependencies; ind++)
+      {
+        if(command_stream->current->dependencies[ind]->command->status == -1)
+        {
+          ind--;
+        }
+      }
+      execute_command(command_stream->current->command, 1);
+    }
+    else //parent
+    {
+        ;
+    }
+    command_stream->current = command_stream->current->next;
+  }
+
 
   while ((command = read_command_stream (command_stream)))
     {

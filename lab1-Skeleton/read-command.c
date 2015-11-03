@@ -69,6 +69,7 @@ parse_chunk_to_command(char* chunk, command_t simple_command) {
   simple_command->input = NULL;
   simple_command->output = (char *) malloc(256);
   simple_command->output = NULL;
+  simple_command->status = -1;
   char word_to_store[256] = ""; 
   char chunk_to_recurse[256] = "";
 

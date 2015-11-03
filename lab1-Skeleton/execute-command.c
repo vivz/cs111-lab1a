@@ -18,6 +18,8 @@ command_status (command_t c)
   return c->status;
 }
 
+
+// 
 int handle_io(command_t c) {
   int input_redir, output_redir;
   //handles input
