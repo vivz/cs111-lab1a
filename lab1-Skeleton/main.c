@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "linked-list.h"
 #include "command-internals.h"
@@ -16,7 +17,7 @@ static char const *script_name;
 
 int dependency_exists(char** list1, char** list2) {
   while (list1[0] != NULL) {
-    printf("list item: %s\n", *list1);
+   // printf("list item: %s\n", *list1);
     while (list2[0] != NULL) {
       // two words are the same
       if (strcmp(list1[0], list2[0]) == 0) {
@@ -77,14 +78,7 @@ main (int argc, char **argv)
 
   int read_array_len = 0;
 
-  if (print_tree)
-  {
-    while ((command = read_command_stream (command_stream))) {
-      printf ("# %d\n", command_number++);
-      print_command (command);
-    } 
-  } 
-  else {
+  if(!print_tree) {
 
     // iterate through command stream to build dependency list, information is stored in command nodes
     while (command_stream->current != NULL) {
@@ -121,44 +115,55 @@ main (int argc, char **argv)
           {
             // add pointer to inner_current in current's dependencies
             command_stream->current->dependencies[command_stream->current->num_dependencies++] = inner_current;
-            printf("Yes\n");
+         //   printf("Yes\n");
           }
         inner_current = inner_current->next;
       }
 
-
-      printf("the readlist is %s\n", command_stream->current->read_list[0]);
+ /*     printf("the readlist is %s\n", command_stream->current->read_list[0]);
       printf("the writelist is %s\n", command_stream->current->write_list[0]);
-      printf("dependency: %d\n", dependency_exists(command_stream->current->read_list, command_stream->current->write_list));
+      printf("dependency: %d\n", dependency_exists(command_stream->current->read_list, command_stream->current->write_list));*/
       command_stream->current = command_stream->current->next;
     }
-  }
+  
+    command_stream->current = command_stream->head;
 
-  command_stream->current = command_stream->head;
-
-  // loop through
-  while (command_stream->current != NULL) {
-    pid_t child_pid = fork();
-    if(child_pid == 0) //child
-    {
-      int ind = 0;
-      //check dependency
-      for(ind; ind<command_stream->current->num_dependencies; ind++)
+    // loop through
+    while (command_stream->current != NULL) {
+      pid_t child_pid = fork();
+      if(child_pid == 0) //child
       {
-        if(command_stream->current->dependencies[ind]->command->status == -1)
+        int ind = 0;
+        //check dependency
+        for(ind; ind<command_stream->current->num_dependencies; ind++)
         {
-          ind--;
+          if(command_stream->current->dependencies[ind]->command->status == -1)
+          {
+            ind--;
+          }
         }
+        execute_command(command_stream->current->command, 1);
       }
-      execute_command(command_stream->current->command, 1);
+      else //parent
+      {
+          ;
+      }
+      command_stream->current = command_stream->current->next;
     }
-    else //parent
-    {
-        ;
-    }
-    command_stream->current = command_stream->current->next;
-  }
 
+    last_command = command_stream->tail->command;
+  }  //end of no print_tree
+
+
+  else 
+  {
+      while ((command = read_command_stream (command_stream))) {
+      printf ("# %d\n", command_number++);
+      print_command (command);
+    } 
+  }  // end of print tree
+
+/*
 
   while ((command = read_command_stream (command_stream)))
     {
@@ -172,7 +177,7 @@ main (int argc, char **argv)
 	  last_command = command;
 	  execute_command (command, time_travel);
 	}
-    }
+    }*/
 
   return print_tree || !last_command ? 0 : command_status (last_command);
 }

@@ -1,3 +1,13 @@
-cat file.txt < out.txt
+echo a
 
-echo boo > out.txt
+        
+sort main.c > foo.txt
+
+        
+echo abc > small.txt
+
+        
+echo b
+        
+
+cat small.txt
