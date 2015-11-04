@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include "linked-list.h"
 #include "command-internals.h"
@@ -76,10 +77,10 @@ main (int argc, char **argv)
   command_t command;
   command_node* inner_current;
 
-  int read_array_len = 0;
 
   if(!print_tree) {
 
+    int read_array_len = 0;
     // iterate through command stream to build dependency list, information is stored in command nodes
     while (command_stream->current != NULL) {
       command_stream->current->read_list = malloc(sizeof(char*) * 32);
@@ -130,7 +131,9 @@ main (int argc, char **argv)
 
     // loop through
     while (command_stream->current != NULL) {
+     
       pid_t child_pid = fork();
+     
       if(child_pid == 0) //child
       {
         int ind = 0;
@@ -144,11 +147,13 @@ main (int argc, char **argv)
         }
         execute_command(command_stream->current->command, 1);
       }
-      else //parent
+      else  //parent
       {
-          ;
+        int exit_status = 0;
+        waitpid(child_pid, &exit_status, 0);
+        command_stream->current->command->status=WEXITSTATUS(exit_status);
       }
-      command_stream->current = command_stream->current->next;
+        command_stream->current = command_stream->current->next;
     }
 
     last_command = command_stream->tail->command;

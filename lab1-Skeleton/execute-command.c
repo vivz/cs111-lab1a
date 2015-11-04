@@ -67,10 +67,13 @@ void execute_simple_command(command_t simple_command) {
         io_status=handle_io(simple_command);
         if(io_status!=0)
         {
+          printf("haha\n");
           simple_command->status=-1;
           error(1,0,"error reading");
         }
         else {
+
+      //  printf("simple command status is %d\n", simple_command->status);
         execvp(simple_command->u.word[0],simple_command->u.word);
         _exit(simple_command->status);
       }
@@ -80,8 +83,11 @@ void execute_simple_command(command_t simple_command) {
     {
       waitpid(child_pid, &exit_status, 0);
       simple_command->status = WEXITSTATUS(exit_status);
+   //   printf("simple command status is %d\n", simple_command->status);
       if(io_status!=0)
+      {
         simple_command->status=-1;
+      }
     }
     return;
 }
@@ -144,7 +150,7 @@ void execute_sub_command(command_t sub_command){
   
   if(io_status!=0)
   {
-      sub_command->status=-1;
+      sub_command->status = -1;
       error(1,0,"error reading");
   }
   else 
