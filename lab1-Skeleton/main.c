@@ -131,8 +131,9 @@ main (int argc, char **argv)
 
     // loop through
     while (command_stream->current != NULL) {
-     
+   //  printf("the command is %s\n",command_stream->current->command->u.word[1]);
       pid_t child_pid = fork();
+     // printf("child_pid is %d\n",child_pid );
      
       if(child_pid == 0) //child
       {
@@ -146,14 +147,15 @@ main (int argc, char **argv)
           }
         }
         execute_command(command_stream->current->command, 1);
-      }
+        _exit(command_stream->current->command->status);
+     }
       else  //parent
-      {
+     {
         int exit_status = 0;
         waitpid(child_pid, &exit_status, 0);
         command_stream->current->command->status=WEXITSTATUS(exit_status);
-      }
-        command_stream->current = command_stream->current->next;
+     }
+     command_stream->current = command_stream->current->next;  
     }
 
     last_command = command_stream->tail->command;

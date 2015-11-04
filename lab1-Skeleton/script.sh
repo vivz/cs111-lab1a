@@ -1,13 +1,13 @@
 echo a
 
-        
-sort main.c > foo.txt
 
-        
+sort main.c
+
+
 echo abc > small.txt
 
-        
+
 echo b
-        
+
 
 cat small.txt
