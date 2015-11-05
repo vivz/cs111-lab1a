@@ -67,7 +67,6 @@ void execute_simple_command(command_t simple_command) {
         io_status=handle_io(simple_command);
         if(io_status!=0)
         {
-          printf("haha\n");
           simple_command->status=-1;
           error(1,0,"error reading");
         }
