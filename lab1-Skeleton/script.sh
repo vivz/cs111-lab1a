@@ -1,9 +1,9 @@
-echo a
+echo a 
 
-echo README
+sort bigfile.txt 
 
 echo abc > small.txt
 
 echo b
 
-echo small.txt
+cat small.txt

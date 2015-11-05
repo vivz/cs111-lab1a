@@ -78,11 +78,13 @@ main (int argc, char **argv)
   command_node* inner_current;
 
 
-  if(!print_tree) {
+  if(!print_tree && time_travel) {
 
     int read_array_len = 0;
     // iterate through command stream to build dependency list, information is stored in command nodes
-    while (command_stream->current != NULL) {
+     while (command_stream->current != NULL) {
+
+      read_array_len = 0;
       command_stream->current->read_list = malloc(sizeof(char*) * 32);
       command_stream->current->write_list = malloc(sizeof(char*) * 32);
       command_stream->current->dependencies = malloc(sizeof(struct command_node*)*20);
@@ -115,63 +117,81 @@ main (int argc, char **argv)
             (dependency_exists(inner_current->write_list, command_stream->current->read_list)))    // "possible WAW data race"
           {
             // add pointer to inner_current in current's dependencies
-            command_stream->current->dependencies[command_stream->current->num_dependencies++] = inner_current;
+          //  printf("hi\n");
+            command_stream->current->dependencies[command_stream->current->num_dependencies] = inner_current;
          //   printf("Yes\n");
+            command_stream->current->num_dependencies++;
           }
         inner_current = inner_current->next;
       }
 
- /*     printf("the readlist is %s\n", command_stream->current->read_list[0]);
+     /* printf("the readlist is %s\n", command_stream->current->read_list[0]);
       printf("the writelist is %s\n", command_stream->current->write_list[0]);
       printf("dependency: %d\n", dependency_exists(command_stream->current->read_list, command_stream->current->write_list));*/
       command_stream->current = command_stream->current->next;
-    }
+    } 
   
     command_stream->current = command_stream->head;
 
     // loop through
     while (command_stream->current != NULL) {
    //  printf("the command is %s\n",command_stream->current->command->u.word[1]);
-      pid_t child_pid = fork();
+   
      // printf("child_pid is %d\n",child_pid );
-     
-      if(child_pid == 0) //child
-      {
+      //pid_t child_pid = fork();
+    //  if(child_pid == 0) //child
+      //{
         int ind = 0;
-        int ind2=0;
+        int ind2 = 0;
+        int num_depp = command_stream->current->num_dependencies;
         //check if dependencies have been started
-        for(ind; ind<command_stream->current->num_dependencies; ind++)
+        for(ind; ind<num_depp; ind++)
         {
-          if(command_stream->current->dependencies[ind]->command->status == -1)
+          if(command_stream->current->dependencies[ind]->pid == -1)
           {
             ind--;
           }
         }
         //check if dependencies are done
         int eStatus;
-        for(ind2; ind2< command_stream->current->num_dependencies; ind2++)
+        for(ind2; ind2< num_depp; ind2++)
         {
             waitpid(command_stream->current->dependencies[ind2]->pid, &eStatus,0);
+            command_stream->current->num_dependencies--;
         }
 
+       
+    // }
+     pid_t child_pid = fork();
+     if(child_pid == 0)
+     {
+       // printf("command_stream is %s\n", command_stream->current->command->u.word[1]);
         execute_command(command_stream->current->command, 1);
-        _exit(1);
-     }
+        _exit(0);
+    }
+
       else  //parent
      {
         command_stream->current->pid = child_pid;
-        //int exit_status = 0;
-        //waitpid(child_pid, &exit_status, 0);
-        //command_stream->current->command->status=WEXITSTATUS(exit_status);
+        
      }
      command_stream->current = command_stream->current->next;  
     }
 
+    command_stream->current = command_stream->head;
+
+    while (command_stream->current != NULL)
+        {
+        int exit_status = 0;
+        waitpid(command_stream->current->pid, &exit_status, 0);
+        command_stream->current->command->status=WEXITSTATUS(exit_status);
+        command_stream->current = command_stream->current->next;
+        }
+
     last_command = command_stream->tail->command;
   }  //end of no print_tree
 
-
-  else 
+  else if (print_tree)
   {
       while ((command = read_command_stream (command_stream))) {
       printf ("# %d\n", command_number++);
@@ -179,6 +199,12 @@ main (int argc, char **argv)
     } 
   }  // end of print tree
 
+  else {
+      while ((command = read_command_stream (command_stream))) {
+        last_command = command;
+        execute_command(command, time_travel);
+      }
+  }
 /*
 
   while ((command = read_command_stream (command_stream)))
