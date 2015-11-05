@@ -138,7 +138,8 @@ main (int argc, char **argv)
       if(child_pid == 0) //child
       {
         int ind = 0;
-        //check dependency
+        int ind2=0;
+        //check if dependencies have been started
         for(ind; ind<command_stream->current->num_dependencies; ind++)
         {
           if(command_stream->current->dependencies[ind]->command->status == -1)
@@ -146,14 +147,22 @@ main (int argc, char **argv)
             ind--;
           }
         }
+        //check if dependencies are done
+        int eStatus;
+        for(ind2; ind2< command_stream->current->num_dependencies; ind2++)
+        {
+            waitpid(command_stream->current->dependencies[ind2]->pid, &eStatus,0);
+        }
+
         execute_command(command_stream->current->command, 1);
-        _exit(command_stream->current->command->status);
+        _exit(1);
      }
       else  //parent
      {
-        int exit_status = 0;
-        waitpid(child_pid, &exit_status, 0);
-        command_stream->current->command->status=WEXITSTATUS(exit_status);
+        command_stream->current->pid = child_pid;
+        //int exit_status = 0;
+        //waitpid(child_pid, &exit_status, 0);
+        //command_stream->current->command->status=WEXITSTATUS(exit_status);
      }
      command_stream->current = command_stream->current->next;  
     }

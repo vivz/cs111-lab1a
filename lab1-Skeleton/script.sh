@@ -1,13 +1,9 @@
 echo a
 
-
-sort main.c
-
+echo README
 
 echo abc > small.txt
 
-
 echo b
 
-
-cat small.txt
+echo small.txt
