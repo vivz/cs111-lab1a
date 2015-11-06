@@ -1,9 +1,5 @@
-echo a 
+echo 5 && echo big.txt 
 
-sort bigfile.txt 
+echo c > big.txt
 
-echo abc > small.txt
-
-echo b
-
-cat small.txt
+echo nd

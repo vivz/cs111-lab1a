@@ -374,6 +374,7 @@ command_t build_command_tree(command_stream* iterate_me) {
     append_to_list(popped_operator, &command_stack);
   }
   // check and make sure tail command has words
+  
   return command_stack.tail->command;
 }
 
