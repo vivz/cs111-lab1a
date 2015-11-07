@@ -1,7 +1,7 @@
 # CS 111 Lab 1 Makefile
 
 CC = gcc
-CFLAGS = -g -Wall -Wextra -Wno-unused
+CFLAGS = -g -Wall -Wextra -Wno-unused -lreadline
 LAB = 1
 DISTDIR = lab1-$(USER)
 
@@ -19,6 +19,8 @@ TIMETRASH_SOURCES = \
   linked-list.c
 
 TIMETRASH_OBJECTS = $(subst .c,.o,$(TIMETRASH_SOURCES))
+READLINE    = -DREADLINE_SUPPORT
+READLINELIB = -lreadline -lcurses
 
 DIST_SOURCES = \
   $(TIMETRASH_SOURCES) alloc.h command.h command-internals.h linked-list.h Makefile \

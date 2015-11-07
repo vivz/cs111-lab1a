@@ -22,7 +22,8 @@ enum chunk_status {
   NEXT_IS_WORD,
 };
 
-void build_command_stream_from_buffer(command_stream*, char* , int );
+
+//void build_command_stream_from_buffer(command_stream*, char* , int );
 
 // assume input is string starting with '('
 void get_string_up_to_matching_parens(char* const string, char* matched) {
@@ -689,7 +690,6 @@ make_command_stream (int (*get_next_byte) (void *),
 
   return command_list;
 }
-
 
 command_t read_command_stream (command_stream_t s)
 {

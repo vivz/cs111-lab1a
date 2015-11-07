@@ -2,14 +2,19 @@ Team members
 Simon Zou - 804347338
 Ni (Vivian) Zhang - 104281736
 
-Our code read the input file and store the content in a buffer. Then we parse 
-the buffer, two characters by two characters, and at the same time separate the 
-operators and the rest of the commands. We then pass the tokens to the function
-parse_chunk_to_command and parse_pair_to_operator_command and store them into 
-struct command. All these populated struct commands are stored in a linked list 
-of command_nodes. Then we go through this linked list and use the 
-infix-to-postfix algorithm to link them in trees. In the end every command is in
-a tree and they are all linked in a linked-list by their roots. After all these,
-we pass this linked list to the print_command function and print them out :D 
-
-In terms of division of work, we pair programmed the entire project.
+We implemented the parallalization between command trees in lab 1c.
+Our approach is that first we added in writelist and readlist fields
+in our command-node struct. Then we use the populate-list function to 
+fill in the read and write lists using the algorithm discussed in class.
+We call the popluate-list function recursively so that it includes 
+all the input and output of its children command (if any). Then we loop
+through the link list of command node (command_stream) and give each 
+command node a list of command nodes it is depended on. Then it comes 
+to the actual parallalization. Again we loop through the command stream.
+For each command-node, we check if all of its dependecies are done. If
+not we keep checking untill they are done. When they are done, we fork
+the process and let the child call execute_command to do the actual
+execution. The parent would update the status of the command node to 
+notify other processes that this process has been started, but they don't
+wait for their children. Outside of the while loop, we do waitpid for all
+children processes before we return.
