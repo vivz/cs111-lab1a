@@ -131,8 +131,7 @@ main (int argc, char **argv)
 
       command_stream_t cs = malloc(100 * sizeof(struct command_stream));
      // printf("strlen is %d\n", strlen(line));
-      build_command_stream_from_buffer(cs, line, strlen(line));
-      printf("it is : %s\n",cs->head->command->u.word[0]);
+      build_command_stream_from_buffer(cs, line, strlen(line)+1);
      // print_command(cs->head->command);
       return 0;
   }
@@ -167,29 +166,7 @@ main (int argc, char **argv)
         command_stream->current->dependencies = malloc(sizeof(struct command_node*)*20);
         command_stream->current->num_dependencies = 0;
         populate_read_list(command_stream->current, command_stream->current->command, &read_array_len, &write_array_len);
-        /*
-        if(command_stream->current->command->input != NULL)
-        {
-            command_stream->current->read_list[0] = malloc(sizeof(char) * 100);
-            read_array_len++;
-            strcpy(command_stream->current->read_list[0], command_stream->current->command->input);
-        }
-        if(command_stream->current->command->output != NULL)
-        {
-            command_stream->current->write_list[0] = malloc(sizeof(char) * 100);
-            strcpy(command_stream->current->write_list[0], command_stream->current->command->output);
-        }
-        // index starts at 1 so we don't include the command name
-        int iterator = 1;
-        while(command_stream->current->command->u.word[iterator]!=NULL)
-        {
-          command_stream->current->read_list[read_array_len]=malloc(sizeof(char*) * 40);
-          if(command_stream->current->command->type == SIMPLE_COMMAND)
-                strcpy(command_stream->current->read_list[read_array_len],command_stream->current->command->u.word[iterator]);
-          iterator++;
-          read_array_len++;
-        }
-        */
+       
         inner_current = command_stream->head;
         while (inner_current != command_stream->current) {
           if ((dependency_exists(inner_current->read_list, command_stream->current->write_list))  || // "possible RAW data race"
@@ -205,16 +182,6 @@ main (int argc, char **argv)
           inner_current = inner_current->next;
         }
 
-        /*printf("the readlist is ================\n");
-        int haha = 0 ;
-        for(haha; haha<read_array_len; haha++)
-          printf("%s\n",command_stream->current->read_list[haha]);
-
-        printf("the writelist is ================\n");
-        for(haha = 0; haha<write_array_len; haha++)
-          printf("%s\n",command_stream->current->write_list[haha]);
-
-        printf("dependency: %d\n", dependency_exists(command_stream->current->read_list, command_stream->current->write_list));*/
         command_stream->current = command_stream->current->next;
       } 
     
@@ -222,12 +189,6 @@ main (int argc, char **argv)
 
       // loop through
       while (command_stream->current != NULL) {
-     //  printf("the command is %s\n",command_stream->current->command->u.word[1]);
-     
-       // printf("child_pid is %d\n",child_pid );
-        //pid_t child_pid = fork();
-      //  if(child_pid == 0) //child
-        //{
           int ind = 0;
           int ind2 = 0;
           int num_depp = command_stream->current->num_dependencies;
@@ -292,22 +253,6 @@ main (int argc, char **argv)
           execute_command(command, time_travel);
         }
     }
-  /*
-
-    while ((command = read_command_stream (command_stream)))
-      {
-        if (print_tree)
-  	{
-  	  printf ("# %d\n", command_number++);
-  	  print_command (command);
-  	}
-        else
-  	{
-  	  last_command = command;
-  	  execute_command (command, time_travel);
-  	}
-      }*/
-
     return print_tree || !last_command ? 0 : command_status (last_command);
   }
 }
