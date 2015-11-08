@@ -702,6 +702,7 @@ command_t read_command_stream (command_stream_t s)
     s->current = s->current->next;
     return return_me;
   }
+}
   /* FIXME: Replace this with your implementation too.  */
   // error (1, 0, "command reading not yet implemented");
   // return 0

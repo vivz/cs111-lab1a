@@ -123,8 +123,9 @@ main (int argc, char **argv)
 
   // There must be exactly one file argument.
   if (interactive) {
+    for(;;)
+    {
       line = readline ("Enter a line: ");
-      printf("the user typed in %s\n", line);
 
       line = realloc(line, 100* sizeof(*line));
       line[strlen(line)] = '\0';
@@ -133,6 +134,7 @@ main (int argc, char **argv)
      // printf("strlen is %d\n", strlen(line));
       build_command_stream_from_buffer(cs, line, strlen(line)+1);
       execute_command(cs->head->command, 0);
+    }
       return 0;
   }
   else {
