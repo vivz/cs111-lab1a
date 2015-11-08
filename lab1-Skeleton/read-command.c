@@ -380,6 +380,7 @@ command_t build_command_tree(command_stream* iterate_me) {
 }
 
 void build_command_stream_from_buffer(command_stream* command_list, char* buffer, int len) {
+  // printf("buffer: %s\n", buffer);
   char pair[3]; 
   char chunk[256] = "";
   int chunk_len;
@@ -703,5 +704,4 @@ command_t read_command_stream (command_stream_t s)
   }
   /* FIXME: Replace this with your implementation too.  */
   // error (1, 0, "command reading not yet implemented");
-  // return 0;
-}
+  // return 0

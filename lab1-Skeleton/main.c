@@ -127,12 +127,12 @@ main (int argc, char **argv)
       printf("the user typed in %s\n", line);
 
       line = realloc(line, 100* sizeof(*line));
-      line[strlen(line)+1] = EOF;
+      line[strlen(line)] = '\0';
 
       command_stream_t cs = malloc(100 * sizeof(struct command_stream));
      // printf("strlen is %d\n", strlen(line));
       build_command_stream_from_buffer(cs, line, strlen(line)+1);
-     // print_command(cs->head->command);
+      execute_command(cs->head->command, 0);
       return 0;
   }
   else {
