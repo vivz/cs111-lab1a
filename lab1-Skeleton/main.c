@@ -106,6 +106,7 @@ main (int argc, char **argv)
   int time_travel = 0;
   program_name = argv[0];
   char *line;
+  int num_line = 0;
 
   //initialize_readline ();
 
@@ -125,12 +126,28 @@ main (int argc, char **argv)
   if (interactive) {
     for(;;)
     {
-      line = readline ("Enter a line: ");
+      line = "";
+      printf("[%d] ", num_line);
+      line = readline ("> ");
+      int i = 0;
+
+      if(strcmp(line,"bye")==0)
+        return 0;
+      /*
+      while(line[i]!=NULL)
+      {
+        printf("%d th char is %d \n", i,line[i]);
+        i++;
+      }*/
+      num_line++;
+     // printf("user entered:%d\n", line);
 
       line = realloc(line, 100* sizeof(*line));
       line[strlen(line)] = '\0';
 
       command_stream_t cs = malloc(100 * sizeof(struct command_stream));
+      cs->head = NULL;
+      cs->tail = NULL;
      // printf("strlen is %d\n", strlen(line));
       build_command_stream_from_buffer(cs, line, strlen(line)+1);
       execute_command(cs->head->command, 0);
